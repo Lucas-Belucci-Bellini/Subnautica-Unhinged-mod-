@@ -50,6 +50,7 @@ mensagem clara em vez de adivinhar** um caminho.
 | [`docs/PLAN.md`](docs/PLAN.md) | Plano por fases |
 | [`docs/LOCAL_INSTALLATION.md`](docs/LOCAL_INSTALLATION.md) | Inventário da máquina do operador |
 | [`docs/SCANNER_API_NOTES.md`](docs/SCANNER_API_NOTES.md) | **APIs verificadas** do scanner e dúvidas em aberto |
+| [`docs/MOD_COMPATIBILITY.md`](docs/MOD_COMPATIBILITY.md) | **Conflitos** entre os 75 mods instalados |
 | [`docs/SOURCES.md`](docs/SOURCES.md) | Fontes, autores e licenças |
 | [`historico/CHANGELOG.md`](historico/CHANGELOG.md) | O que entrou |
 

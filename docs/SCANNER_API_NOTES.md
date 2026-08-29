@@ -29,7 +29,7 @@ ser feita contra o `Assembly-CSharp.dll` local do build 83031** antes de escreve
 | Unity | `2019.4.36` | ✅ (pacote `UnityEngine.Modules` fixado pelo Nautilus) |
 | GUID do Nautilus | `com.snmodding.nautilus` | ✅ |
 | BepInEx | `BepInEx.Core` 5.4.21 (BepInEx **5**, não 6) | ✅ |
-| Nautilus | 1.2.1 no nuget.org | ✅ |
+| Nautilus | 1.1.0 / 1.2.0 / 1.2.1 no nuget.org | ⚠️ **o operador tem `1.0.0-pre.53`** — ver [MOD_COMPATIBILITY.md §2](MOD_COMPATIBILITY.md) |
 
 ## `MapRoomFunctionality` — a sala de scanner ✅
 
@@ -168,9 +168,12 @@ duplicar: dois mods adicionando `ResourceTracker` ao mesmo objeto é registro du
    nome/distância/direção dependem dessa leitura — hoje é dúvida, não plano.
 4. **Custo de `StartUpdatePosition()` em escala.** Quantos alvos móveis o registro aguenta
    antes de custar frame? Sem medição, o teto de 200 resultados é um chute prudente.
-5. **Conflito com os mods já instalados.** `Scan for Anything`, `Scanner Speed Multiplier`,
-   `SonarModule` e `ResourceMonitor` tocam nessa mesma área. Ordem de patch e registro
-   duplicado precisam de teste antes de qualquer entrega.
+5. **Conflito com os mods já instalados.** `Scan for Anything` (**1.0.4 — exatamente a
+   versão cujo código foi lido aqui**), `Scanner Speed Multipler` 1.4.0, `Sonar Module` 2.1
+   e `Resource Monitor` tocam nessa mesma área. O Scan for Anything **já resolve o
+   rastreamento de leviatãs**: o Unhinged deve integrar, não duplicar. Falta confirmar o
+   que o Scanner Speed Multiplier patcha — e se ele está sequer implantado.
+   Detalhamento em [`MOD_COMPATIBILITY.md`](MOD_COMPATIBILITY.md).
 6. **Licenças.** O **Nautilus é GPL-3.0-only**. Um overhaul distribuído que linka Nautilus
    precisa de uma decisão consciente de licenciamento para o Unhinged — isso não é detalhe
    de rodapé, é condição de distribuição.

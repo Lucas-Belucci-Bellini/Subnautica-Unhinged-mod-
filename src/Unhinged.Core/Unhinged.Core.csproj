@@ -23,7 +23,19 @@
     <PackageReference Include="BepInEx.Core" Version="5.4.21" PrivateAssets="all" />
     <!-- Unity 2019.4.36 = versão do engine usada pelo jogo (mesma que o Nautilus fixa). -->
     <PackageReference Include="UnityEngine.Modules" Version="2019.4.36" PrivateAssets="all" />
-    <PackageReference Include="Nautilus" Version="1.2.1" PrivateAssets="all" />
+    <!--
+      Nautilus NÃO é referenciado em tempo de compilação de propósito.
+
+      O Vortex do operador reporta Nautilus 1.0.0-pre.53; o nuget.org só publica
+      1.1.0, 1.2.0 e 1.2.1. Compilar contra uma API mais nova do que a instalada dá
+      MissingMethodException em runtime — na máquina do jogador, o pior lugar para
+      descobrir. Como este esqueleto não chama nenhuma API do Nautilus, a referência
+      seria só um risco latente.
+
+      O [BepInDependency] em Plugin.cs é declaração de ORDEM DE CARGA (só o GUID) e
+      não precisa desta referência. Ao precisar de uma API do Nautilus: confirmar a
+      versão real do Nautilus.dll instalado e fixar exatamente essa versão aqui.
+    -->
     <!-- Permite compilar net472 fora do Windows (CI Linux, contêiner). -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
   </ItemGroup>
