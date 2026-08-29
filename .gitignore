@@ -1,0 +1,7 @@
+# Fontes originais e cópias de trabalho ficam fora do repositório principal.
+upstream/
+*.user
+bin/
+obj/
+Build/
+dist/
