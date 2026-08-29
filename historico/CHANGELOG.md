@@ -60,3 +60,14 @@
   (GPL-3.0-only) no conjunto, o resultado precisa ser GPL-3.0.
 - SealSub, PrimeSonic e ConsoleImproved **não têm licença**: ficam fora da fusão até
   autorização dos autores.
+
+### Adicionado (alvo de porte identificado)
+- `docs/PORTE-SOCK-TANK.md`: o S.O.C.K. Tank é do **Socknautica Submarines Pack**
+  (LeeTwentyThree, encomenda do Socksfor1). Fonte lida e medida: 68 arquivos, 7.458
+  linhas, e o `.csproj` referencia QModManager + SMLHelper — legado confirmado, não
+  roda no ramo moderno. Superfície legada é pequena (8 importações; LanguageHandler,
+  Craftable, TechTypeHandler, OptionsPanelHandler, ConfigFile), então o porte é
+  concentrado no registro de prefabs, receitas e ponto de entrada.
+- Bloqueios registrados: o repositório **não tem licença** (nem o SubnauticaMods do
+  mesmo autor) e **não contém os assets** — o modelo do tanque vive no ZIP de release,
+  com licença própria. Portar para uso local é livre; distribuir exige permissão.

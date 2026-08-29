@@ -23,6 +23,7 @@ As fontes originais ficam fora do repositório principal, em:
 - VehicleFramework — https://github.com/NeisesMike/VehicleFramework
 - Scan for Anything — https://github.com/GreaterDane42/Subnautica-Mods
 - Prototype Sub — https://github.com/Indigocoder1/PrototypeSub
+- Socknautica / Socknautica Submarines Pack — https://github.com/LeeTwentyThree/Socknautica
 - Echelon — https://github.com/IronFox/Subnautica-Echelon
 
 ## Licenças verificadas (29/08/2026)
@@ -42,6 +43,7 @@ Lidas dos próprios repositórios, não de memória. Detalhe do que cada uma per
 | Subnautica-TerrainPatcher | Esper89 | **AGPL-3.0** | ⚠️ contamina para AGPL |
 | Scan for Anything | GreaterDane42 | *não verificada* | — |
 | SealSub | 32Kallies | ❌ **sem licença** | ⛔ pedir ao autor |
+| Socknautica + Submarines Pack (D.A.D. / S.O.C.K. Tank) | LeeTwentyThree (encomenda do Socksfor1) | ❌ **sem licença** | ⛔ pedir ao autor |
 | PrimeSonicSubnauticaMods | PrimeSonic | ❌ **sem licença** | ⛔ pedir ao autor |
 | SubnauticaMods (ConsoleImproved) | zorgesho | ❌ **sem licença** | ⛔ pedir ao autor |
 

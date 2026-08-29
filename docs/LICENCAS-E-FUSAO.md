@@ -21,6 +21,7 @@ técnica.
 | ECCLibrary (32Kallies) | **LGPL-2.1** | ✅ sim; modificações precisam ser publicadas |
 | TerrainPatcher (Esper89) | **AGPL-3.0** | ⚠️ sim, mas **contamina o todo para AGPL-3.0** |
 | **SealSub** (32Kallies) | ❌ **nenhuma** | ⛔ **não** — sem permissão do autor |
+| **Socknautica / S.O.C.K. Tank** (LeeTwentyThree) | ❌ **nenhuma** | ⛔ **não** — ver [`PORTE-SOCK-TANK.md`](PORTE-SOCK-TANK.md) |
 | PrimeSonic mods | ❌ nenhuma | ⛔ não |
 | ConsoleImproved (zorgesho) | ❌ nenhuma | ⛔ não |
 
