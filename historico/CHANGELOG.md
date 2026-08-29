@@ -25,3 +25,20 @@
 - `docs/MOD_COMPATIBILITY.md`: análise dos 75 pacotes do Vortex — pilha de
   carregamento, camada legada (QModManager/SMLHelper), colisões com o protótipo do
   Scanner e suspeitos do bug dos fabricadores.
+
+### Adicionado (camada de override)
+- `Interop/ModRegistry`: inventário em runtime dos mods carregados (`All`, `IsLoaded`,
+  `GetVersion`, `FindByName`) e das falhas de carga. Ligado ao `Awake` — o primeiro boot
+  já lista os mods e sinaliza, em Warning, os que não carregaram.
+- `Interop/ModBridge`: lê e **reescreve** entradas de configuração de outros mods
+  (passando por cima do `AcceptableValueRange` deles) e resolve tipos/métodos por nome
+  para patch do Harmony, sem referência de compilação. Tolerante a falha por princípio.
+- `docs/ARQUITETURA-MEGAMOD.md`: por que a camada de override substitui a ideia de fundir
+  os binários, com as APIs verificadas que a sustentam.
+
+### Alterado
+- `PluginInfo` → `UnhingedInfo`: o nome colidia com `BepInEx.PluginInfo`, e o compilador
+  escolhia o nosso em silêncio dentro do namespace.
+- Dependência do Nautilus passa a `SoftDependency`: garante ordem de carga sem impedir o
+  Unhinged de subir se o Nautilus falhar — o contrário seria contraditório para uma camada
+  que existe para consertar convivência entre mods.

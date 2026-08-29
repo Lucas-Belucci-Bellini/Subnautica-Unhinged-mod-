@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using Unhinged.Core.Configuration;
+using Unhinged.Core.Interop;
 
 namespace Unhinged.Core
 {
@@ -14,8 +15,13 @@ namespace Unhinged.Core
     /// os patches do scanner só entram depois da nota de API estar fechada
     /// (docs/SCANNER_API_NOTES.md) e revisada.
     /// </summary>
-    [BepInPlugin(PluginInfo.Guid, PluginInfo.Name, PluginInfo.Version)]
-    [BepInDependency(PluginInfo.NautilusGuid, BepInDependency.DependencyFlags.HardDependency)]
+    [BepInPlugin(UnhingedInfo.Guid, UnhingedInfo.Name, UnhingedInfo.Version)]
+    // SoftDependency, não Hard: garante que o Unhinged carregue DEPOIS do Nautilus
+    // (é o que importa para uma camada de override) sem se recusar a carregar caso o
+    // Nautilus falhe ou esteja numa versão inesperada. Como camada que existe para
+    // consertar a convivência entre mods, ser a primeira a desistir seria contraditório.
+    // Vira HardDependency no dia em que este assembly realmente chamar uma API do Nautilus.
+    [BepInDependency(UnhingedInfo.NautilusGuid, BepInDependency.DependencyFlags.SoftDependency)]
     public sealed class Plugin : BaseUnityPlugin
     {
         /// <summary>Log do plugin, para uso das outras classes do assembly.</summary>
@@ -24,14 +30,14 @@ namespace Unhinged.Core
         /// <summary>Configuração carregada, disponível depois do <see cref="Awake"/>.</summary>
         internal static UnhingedConfig Settings { get; private set; }
 
-        private static readonly Harmony HarmonyInstance = new Harmony(PluginInfo.Guid);
+        private static readonly Harmony HarmonyInstance = new Harmony(UnhingedInfo.Guid);
 
         private void Awake()
         {
             Log = Logger;
             Settings = new UnhingedConfig(Config);
 
-            Log.LogInfo($"{PluginInfo.Name} {PluginInfo.Version} carregando…");
+            Log.LogInfo($"{UnhingedInfo.Name} {UnhingedInfo.Version} carregando…");
             Log.LogInfo($"Perfil: {Settings.Profile.Value}");
 
             try
@@ -49,13 +55,25 @@ namespace Unhinged.Core
                 return;
             }
 
-            Log.LogInfo($"{PluginInfo.Name} carregado.");
+            // Inventário do que mais está carregado. Roda depois dos patches para que uma
+            // falha aqui não impeça o resto de subir — e serve de linha de base para
+            // qualquer diagnóstico posterior de conflito entre mods.
+            try
+            {
+                ModRegistry.LogInventory(Log, Settings.VerboseLogging.Value);
+            }
+            catch (Exception ex)
+            {
+                Log.LogWarning($"Falha ao inventariar os mods carregados: {ex.Message}");
+            }
+
+            Log.LogInfo($"{UnhingedInfo.Name} carregado.");
         }
 
         private void OnDestroy()
         {
             HarmonyInstance.UnpatchSelf();
-            Log?.LogInfo($"{PluginInfo.Name} descarregado.");
+            Log?.LogInfo($"{UnhingedInfo.Name} descarregado.");
         }
     }
 }

@@ -10,10 +10,18 @@ Overhaul comunitário para o Subnautica moderno (BepInEx/Nautilus).
 Este projeto **não tem vínculo oficial** com os autores dos mods originais. Autores,
 licenças, URLs e permissões são preservados em [`docs/SOURCES.md`](docs/SOURCES.md).
 
+## A ideia
+
+O Unhinged **não empacota os outros mods** — ele é a camada que **manda neles**. Os 75 mods
+seguem instalados e atualizáveis; o Unhinged carrega depois deles e reescreve seus limites
+em tempo de execução, patcha o que for preciso e acrescenta sistemas por cima.
+Ver [`docs/ARQUITETURA-MEGAMOD.md`](docs/ARQUITETURA-MEGAMOD.md).
+
 ## Estado
 
-Fase de auditoria e esqueleto. `src/Unhinged.Core` **compila** e sobe logging e
-configuração; ainda **não aplica nenhum patch de jogo** — por decisão, não por pendência
+`src/Unhinged.Core` **compila** e sobe logging, configuração e a camada de interop
+(`ModRegistry`/`ModBridge`) que inventaria e alcança os outros mods. Ainda **não aplica
+nenhum patch de jogo** — por decisão, não por pendência
 (ver [`docs/SCANNER_API_NOTES.md`](docs/SCANNER_API_NOTES.md)).
 
 ## Compilar
@@ -50,6 +58,7 @@ mensagem clara em vez de adivinhar** um caminho.
 | [`docs/PLAN.md`](docs/PLAN.md) | Plano por fases |
 | [`docs/LOCAL_INSTALLATION.md`](docs/LOCAL_INSTALLATION.md) | Inventário da máquina do operador |
 | [`docs/SCANNER_API_NOTES.md`](docs/SCANNER_API_NOTES.md) | **APIs verificadas** do scanner e dúvidas em aberto |
+| [`docs/ARQUITETURA-MEGAMOD.md`](docs/ARQUITETURA-MEGAMOD.md) | **Como o Unhinged manda nos 75 mods** sem fundir binários |
 | [`docs/MOD_COMPATIBILITY.md`](docs/MOD_COMPATIBILITY.md) | **Conflitos** entre os 75 mods instalados |
 | [`docs/SOURCES.md`](docs/SOURCES.md) | Fontes, autores e licenças |
 | [`historico/CHANGELOG.md`](historico/CHANGELOG.md) | O que entrou |

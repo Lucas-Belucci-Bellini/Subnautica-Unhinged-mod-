@@ -1,10 +1,14 @@
 namespace Unhinged.Core
 {
     /// <summary>
-    /// Identidade do plugin. Mantida em um único lugar para que o GUID usado no
+    /// Identidade deste plugin, num lugar só, para que o GUID usado no
     /// <c>BepInPlugin</c>, na instância do Harmony e nos logs nunca divirjam.
+    ///
+    /// O nome é propositalmente distinto de <c>BepInEx.PluginInfo</c>: a camada de
+    /// interop usa aquele tipo o tempo todo, e dois <c>PluginInfo</c> visíveis no mesmo
+    /// namespace fazem o compilador escolher o nosso em silêncio.
     /// </summary>
-    internal static class PluginInfo
+    internal static class UnhingedInfo
     {
         internal const string Guid = "com.subnauticaunhinged.core";
         internal const string Name = "Subnautica Unhinged — Core";
