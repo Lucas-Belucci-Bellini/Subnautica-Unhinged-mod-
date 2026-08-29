@@ -25,6 +25,29 @@ As fontes originais ficam fora do repositório principal, em:
 - Prototype Sub — https://github.com/Indigocoder1/PrototypeSub
 - Echelon — https://github.com/IronFox/Subnautica-Echelon
 
+## Licenças verificadas (29/08/2026)
+
+Lidas dos próprios repositórios, não de memória. Detalhe do que cada uma permite em
+[`LICENCAS-E-FUSAO.md`](LICENCAS-E-FUSAO.md).
+
+| Projeto | Autor | Licença | Fundir? |
+| --- | --- | --- | --- |
+| FCStudios_SubnauticaMods | Field Creator Studios | **MIT** | ✅ |
+| SubLibrary | Indigocoder1 | **MIT** | ✅ |
+| PrototypeSub | Indigocoder1 | **MIT** | ✅ |
+| Subnautica-Echelon | IronFox | **MIT** (assets KriptoFX à parte) | ✅ código |
+| VehicleFramework | NeisesMike | **GPL-3.0** | ✅ se o todo for GPL-3.0 |
+| Nautilus | SubnauticaModding | **GPL-3.0-only** | ✅ (dependência) |
+| ECCLibrary | 32Kallies | **LGPL-2.1** | ✅ com condições |
+| Subnautica-TerrainPatcher | Esper89 | **AGPL-3.0** | ⚠️ contamina para AGPL |
+| Scan for Anything | GreaterDane42 | *não verificada* | — |
+| SealSub | 32Kallies | ❌ **sem licença** | ⛔ pedir ao autor |
+| PrimeSonicSubnauticaMods | PrimeSonic | ❌ **sem licença** | ⛔ pedir ao autor |
+| SubnauticaMods (ConsoleImproved) | zorgesho | ❌ **sem licença** | ⛔ pedir ao autor |
+
+⚠️ **Assets seguem licença própria**, separada da do código: `.assetbundle`, modelos,
+texturas, sons e posters não são cobertos pela licença do código-fonte.
+
 ## Política
 
 O projeto deve creditar todos os autores originais e respeitar a licença de cada repositório. Código e assets de terceiros não devem ser apresentados como criação própria. Antes de distribuir qualquer build, verificar também as permissões específicas das páginas Nexus e dos assets.

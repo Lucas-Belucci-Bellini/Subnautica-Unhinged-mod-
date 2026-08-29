@@ -42,3 +42,21 @@
 - Dependência do Nautilus passa a `SoftDependency`: garante ordem de carga sem impedir o
   Unhinged de subir se o Nautilus falhar — o contrário seria contraditório para uma camada
   que existe para consertar convivência entre mods.
+
+### Adicionado (levantamento de licenças)
+- `docs/LICENCAS-E-FUSAO.md`: licenças lidas dos repositórios reais e o que cada uma
+  permite. **Os mods FCS são MIT** — podem ser portados, fundidos e redistribuídos com
+  atribuição, que é exatamente o alvo principal de porte do projeto.
+- `SOURCES.md` ganha a tabela de licenças verificadas, fechando um "próximo passo" que
+  estava pendente no `PROJECT_CONTEXT.md`.
+
+### Alterado
+- `ARQUITETURA-MEGAMOD.md` corrige a posição anterior: fundir não é errado por princípio.
+  O critério é o mod estar vivo ou morto — para mod morto, fundir é a **única** saída,
+  porque não há patch em runtime para código que não carrega.
+
+### Aberto
+- O repositório **não declara licença**. Com VehicleFramework (GPL-3.0) e Nautilus
+  (GPL-3.0-only) no conjunto, o resultado precisa ser GPL-3.0.
+- SealSub, PrimeSonic e ConsoleImproved **não têm licença**: ficam fora da fusão até
+  autorização dos autores.

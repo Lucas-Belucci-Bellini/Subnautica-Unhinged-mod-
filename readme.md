@@ -12,10 +12,15 @@ licenças, URLs e permissões são preservados em [`docs/SOURCES.md`](docs/SOURC
 
 ## A ideia
 
-O Unhinged **não empacota os outros mods** — ele é a camada que **manda neles**. Os 75 mods
-seguem instalados e atualizáveis; o Unhinged carrega depois deles e reescreve seus limites
-em tempo de execução, patcha o que for preciso e acrescenta sistemas por cima.
-Ver [`docs/ARQUITETURA-MEGAMOD.md`](docs/ARQUITETURA-MEGAMOD.md).
+Duas trilhas, conforme o mod esteja vivo ou morto:
+
+- **Mod vivo** (recebe atualização) → o Unhinged carrega depois dele e **reescreve seus
+  limites em runtime**, sem tocar no arquivo dele. Ele continua atualizável.
+- **Mod morto** (não carrega no jogo atual) → a fonte é **portada e fundida** no Unhinged.
+  É o único caminho: não há patch em runtime para código que nunca carregou.
+
+Ver [`docs/ARQUITETURA-MEGAMOD.md`](docs/ARQUITETURA-MEGAMOD.md) e
+[`docs/LICENCAS-E-FUSAO.md`](docs/LICENCAS-E-FUSAO.md).
 
 ## Estado
 
@@ -58,7 +63,8 @@ mensagem clara em vez de adivinhar** um caminho.
 | [`docs/PLAN.md`](docs/PLAN.md) | Plano por fases |
 | [`docs/LOCAL_INSTALLATION.md`](docs/LOCAL_INSTALLATION.md) | Inventário da máquina do operador |
 | [`docs/SCANNER_API_NOTES.md`](docs/SCANNER_API_NOTES.md) | **APIs verificadas** do scanner e dúvidas em aberto |
-| [`docs/ARQUITETURA-MEGAMOD.md`](docs/ARQUITETURA-MEGAMOD.md) | **Como o Unhinged manda nos 75 mods** sem fundir binários |
+| [`docs/ARQUITETURA-MEGAMOD.md`](docs/ARQUITETURA-MEGAMOD.md) | **As duas trilhas**: override para mod vivo, fork para mod morto |
+| [`docs/LICENCAS-E-FUSAO.md`](docs/LICENCAS-E-FUSAO.md) | **O que pode ir para um arquivo só** — licenças verificadas |
 | [`docs/MOD_COMPATIBILITY.md`](docs/MOD_COMPATIBILITY.md) | **Conflitos** entre os 75 mods instalados |
 | [`docs/SOURCES.md`](docs/SOURCES.md) | Fontes, autores e licenças |
 | [`historico/CHANGELOG.md`](historico/CHANGELOG.md) | O que entrou |

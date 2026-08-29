@@ -13,18 +13,25 @@ Três desejos, e vale separá-los porque **só um deles é problemático**:
 3. **Adicionar coisa nova** — ✅ totalmente viável
 4. *Fundir os binários num só* — ⛔ é o único item ruim, e **é desnecessário para 1–3**
 
-## Por que fundir os binários é o caminho errado
+## Fundir: quando sim e quando não
 
-Não é conservadorismo — é que fundir **piora** exatamente o que você quer:
+⚠️ **Correção de uma posição anterior deste documento.** A primeira versão dizia que fundir
+era "o caminho errado", ponto. O levantamento de licenças
+([`LICENCAS-E-FUSAO.md`](LICENCAS-E-FUSAO.md)) mostrou que isso era largo demais: **os mods
+FCS são MIT**, e fundi-los é legal e é a única saída para eles. O critério certo não é
+"fundir é ruim" — é **o mod está vivo ou morto?**
 
-- **Congela tudo.** Uma cópia do Vehicle Framework 2.0.8 dentro do seu DLL não recebe a
-  2.0.9. Você troca "seguir a limitação do mod" por "manter 75 forks para sempre".
-- **Quebra a lei e as regras do próprio projeto.** A maioria desses mods é de terceiros,
-  vários sem fonte pública. O `PROJECT_CONTEXT.md` já decidiu: *"não distribuir DLLs
-  originais como se fossem código próprio"*, *"preservar autores, licenças e permissões"*.
-  E o Nautilus é **GPL-3.0-only**.
-- **Não é mais poder.** Fundir dá acesso ao código. Mas patch em runtime **também** dá — e
-  sem carregar o peso.
+| | mod **vivo** (recebe atualização) | mod **morto** (não carrega no jogo atual) |
+| --- | --- | --- |
+| Fundir | ⛔ você perde as atualizações dele e herda a manutenção | ✅ é o **único** caminho |
+| Override em runtime | ✅ ideal | ⛔ impossível: não há o que patchar se ele não carrega |
+
+Não existe patch em runtime para código que nunca foi carregado. É por isso que as duas
+trilhas coexistem — e não são uma escolha entre si.
+
+**O que a licença impõe ao conjunto:** GPL-3.0 (por causa do VehicleFramework e do
+Nautilus), com fonte pública. Três mods (SealSub, PrimeSonic, ConsoleImproved) **não têm
+licença** e ficam fora até o autor autorizar.
 
 ## O caminho: camada de override
 
