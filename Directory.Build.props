@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Company>Subnautica Unhinged</Company>
+
+    <!--
+      Saída SEMPRE fora da instalação do jogo (regra 3 do briefing).
+      O deploy para o jogo é opt-in explícito: veja Deploy.targets.
+    -->
+    <BaseOutputPath>$(MSBuildThisFileDirectory)artifacts\$(MSBuildProjectName)\</BaseOutputPath>
+  </PropertyGroup>
+</Project>

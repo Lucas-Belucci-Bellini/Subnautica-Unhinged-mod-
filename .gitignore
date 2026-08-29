@@ -1,7 +1,17 @@
 # Fontes originais e cópias de trabalho ficam fora do repositório principal.
 upstream/
+
+# Build
 *.user
 bin/
 obj/
 Build/
 dist/
+artifacts/
+
+# Nunca versionar binários do jogo ou de terceiros.
+# As assemblies de referência vêm do pacote NuGet Subnautica.GameLibs.
+*.dll
+*.exe
+*.msgpack
+publicized_assemblies/

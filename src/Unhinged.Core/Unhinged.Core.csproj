@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>Unhinged.Core</AssemblyName>
+    <RootNamespace>Unhinged.Core</RootNamespace>
+    <Version>0.1.0</Version>
+    <Description>Camada base do Subnautica Unhinged (BepInEx/Nautilus).</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <!-- O jogo carrega a DLL; não precisamos do .deps.json nem de copiar dependências. -->
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Assemblies de referência do jogo vêm do pacote público Subnautica.GameLibs.
+      NENHUMA DLL do jogo é copiada para este repositório (regra 1 do briefing).
+      82304 é a versão mais recente publicada; o jogo local é build 83031.
+    -->
+    <PackageReference Include="Subnautica.GameLibs" Version="82304.0.0-r.0" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" PrivateAssets="all" />
+    <!-- Unity 2019.4.36 = versão do engine usada pelo jogo (mesma que o Nautilus fixa). -->
+    <PackageReference Include="UnityEngine.Modules" Version="2019.4.36" PrivateAssets="all" />
+    <PackageReference Include="Nautilus" Version="1.2.1" PrivateAssets="all" />
+    <!-- Permite compilar net472 fora do Windows (CI Linux, contêiner). -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\build\Deploy.targets" Condition="Exists('$(MSBuildThisFileDirectory)..\..\build\Deploy.targets')" />
+
+</Project>
