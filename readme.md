@@ -36,8 +36,11 @@ referência vêm do pacote público `Subnautica.GameLibs`, e **nenhum arquivo do
 versionado neste repositório**.
 
 ```bash
-dotnet build src/Unhinged.Core/Unhinged.Core.csproj -c Release
+dotnet build Unhinged.sln -c Release
 ```
+
+⚠️ **`src/Unhinged.Legacy` também precisa do `Nautilus.dll`**, que **não está no NuGet**
+(o pacote com esse nome lá é de outro projeto). Ver [`refs/README.md`](refs/README.md).
 
 A saída vai para `artifacts/Unhinged.Core/Release/Unhinged.Core.dll` — **fora** da
 instalação do jogo, sempre.

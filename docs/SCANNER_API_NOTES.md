@@ -29,7 +29,7 @@ ser feita contra o `Assembly-CSharp.dll` local do build 83031** antes de escreve
 | Unity | `2019.4.36` | ✅ (pacote `UnityEngine.Modules` fixado pelo Nautilus) |
 | GUID do Nautilus | `com.snmodding.nautilus` | ✅ |
 | BepInEx | `BepInEx.Core` 5.4.21 (BepInEx **5**, não 6) | ✅ |
-| Nautilus | 1.1.0 / 1.2.0 / 1.2.1 no nuget.org | ⚠️ **o operador tem `1.0.0-pre.53`** — ver [MOD_COMPATIBILITY.md §2](MOD_COMPATIBILITY.md) |
+| Nautilus | **1.0.0-pre.53** (compilado da fonte) | ✅ é a versão instalada **e** a do master do Nautilus |
 
 ## `MapRoomFunctionality` — a sala de scanner ✅
 

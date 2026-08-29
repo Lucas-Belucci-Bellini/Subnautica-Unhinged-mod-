@@ -71,3 +71,22 @@
 - Bloqueios registrados: o repositório **não tem licença** (nem o SubnauticaMods do
   mesmo autor) e **não contém os assets** — o modelo do tanque vive no ZIP de release,
   com licença própria. Portar para uso local é livre; distribuir exige permissão.
+
+### Adicionado (ponte legado → moderno)
+- `src/Unhinged.Legacy`: reimplementa os namespaces `SMLHelper.V2.*` encaminhando para o
+  Nautilus, para que fonte legada compile **sem alterar os `using`**. Primeira fatia:
+  `Crafting` (`Ingredient`, `TechData`→`RecipeData`) e `Handlers.LanguageHandler`.
+  Mapeamento seguindo o guia oficial `sml2-to-nautilus`, com assinaturas conferidas
+  contra a assembly real.
+- `build/Nautilus.targets`: resolve o `Nautilus.dll` por propriedade, variável de
+  ambiente, `refs/` ou `SUBNAUTICA_GAME_DIR` — sem versionar binário de terceiro.
+- Medição que motiva o shim: FCS tem **99.173 linhas em 667 arquivos**, mas só ~20
+  símbolos legados distintos — os **mesmos** que o S.O.C.K. Tank usa.
+
+### Corrigido
+- **O pacote `Nautilus` do nuget.org é o OctopusDeploy-Nautilus**, de outro autor e sem
+  relação com o jogo. Eu o havia citado como se fosse o Nautilus do Subnautica; a
+  referência já tinha sido removida por outro motivo, então nenhum binário foi afetado.
+- Decorrência: `1.0.0-pre.53` **é a versão atual** do Nautilus (bate com o `Version.targets`
+  do master), não uma versão velha. A instalação do operador está em dia — `MOD_COMPATIBILITY.md §2`
+  foi reescrito.

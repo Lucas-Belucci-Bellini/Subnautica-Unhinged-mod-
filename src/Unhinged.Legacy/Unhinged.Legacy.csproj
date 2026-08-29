@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>Unhinged.Legacy</AssemblyName>
+    <RootNamespace>Unhinged.Legacy</RootNamespace>
+    <Version>0.1.0</Version>
+    <Description>Ponte SMLHelper V2 → Nautilus, para portar mods legados sem reescrevê-los.</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <UsesNautilus>true</UsesNautilus>
+    <!-- Os tipos daqui imitam a API do SMLHelper de propósito; nomes não seguem
+         a convenção deste repositório porque precisam bater com a API antiga. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Subnautica.GameLibs" Version="82304.0.0-r.0" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" PrivateAssets="all" />
+    <PackageReference Include="UnityEngine.Modules" Version="2019.4.36" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\build\Nautilus.targets" />
+
+</Project>

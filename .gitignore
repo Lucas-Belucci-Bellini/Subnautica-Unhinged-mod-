@@ -15,3 +15,6 @@ artifacts/
 *.exe
 *.msgpack
 publicized_assemblies/
+
+# Assemblies de referência locais: baixadas/copiadas, nunca versionadas.
+refs/*.dll

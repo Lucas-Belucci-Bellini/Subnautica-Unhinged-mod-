@@ -21,25 +21,26 @@ Snapshot da lista do Vortex informada pelo operador, cruzada com
 Referenciei `BepInEx.Core` **5.4.21** e a instalação é **5.4.23**. Isso é seguro: compilar
 contra uma API mais antiga e rodar numa mais nova é o sentido que funciona. O inverso não.
 
-## 2. ⚠️ Nautilus: a versão instalada é mais velha que qualquer uma publicada
+## 2. ✅ Nautilus: a instalação está correta — o erro era meu
 
-O Vortex reporta **`1.0.0-pre.53`**. O nuget.org publica **apenas 1.1.0, 1.2.0 e 1.2.1** —
-`1.0.0-pre.53` não existe lá.
+**Correção.** A versão anterior deste documento dizia que o `1.0.0-pre.53` do operador era
+"mais velho que qualquer versão publicada". Estava errado, por dois motivos encadeados:
 
-**Isto invalidou uma escolha que eu já tinha feito.** Eu havia referenciado
-`Nautilus 1.2.1` no `.csproj`. Compilar contra uma API mais nova do que a instalada
-produz `MissingMethodException`/`TypeLoadException` **em runtime, na máquina do jogador** —
-o build passa e o erro só aparece no jogo.
+1. **O pacote `Nautilus` do nuget.org não é o Nautilus do Subnautica.** É o
+   *OctopusDeploy-Nautilus*, ferramenta de deploy de outro autor. As "versões 1.1.0/1.2.0/
+   1.2.1" que eu comparei eram desse projeto. O sinal estava no build, que puxava
+   `Octopus.Client` — e passou batido.
+2. **`1.0.0-pre.53` é a versão atual.** O `Version.targets` do master do Nautilus
+   (commit de 24/08/2026) declara exatamente `VersionPrefix=1.0.0` + `pre.53`.
 
-**Correção aplicada:** removi a referência de compilação ao Nautilus. O esqueleto não
-chama nenhuma API dele, e o `[BepInDependency]` em `Plugin.cs` é só ordem de carga (usa o
-GUID, string) — o build continua verde sem a referência. Confirmado por build limpo.
+➡️ **Nada a atualizar.** O Nautilus instalado está em dia.
 
-➡️ **Ação sua, antes de qualquer código que use Nautilus:** conferir a versão real de
-`BepInEx\plugins\Nautilus\Nautilus.dll` (propriedades do arquivo, ou o log do BepInEx na
-inicialização). Essa versão é que vai ser fixada no `.csproj`. Se de fato for uma pre-1.0,
-vale considerar atualizar o Nautilus antes de construir em cima dele — a API mudou bastante
-entre `1.0.0-pre` e `1.2`.
+O Nautilus **não é distribuído por NuGet**. Neste repositório ele é resolvido por caminho
+(`build/Nautilus.targets`): propriedade, variável de ambiente, `refs/`, ou a instalação via
+`SUBNAUTICA_GAME_DIR`. Nenhum binário de terceiro é versionado.
+
+Compilar o Nautilus da fonte exige **.NET SDK 10+** — o master usa C# 14 (extension
+members), e o SDK 8 recusa com `CS1617`.
 
 ## 3. ⛔ A camada legada está ativa e é a suspeita nº 1 do erro conhecido
 
