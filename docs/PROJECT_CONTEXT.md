@@ -34,20 +34,15 @@ Fontes originais já disponíveis (fora do projeto principal para evitar `spawn 
 - `C:\Users\Usuario\Desktop\Subnautica 2.0-upstream\third-party\PrimeSonicSubnauticaMods`
 - `C:\Users\Usuario\Desktop\Subnautica 2.0-upstream\third-party\TerrainPatcher`
 - `C:\Users\Usuario\Desktop\Subnautica 2.0-upstream\third-party\SubLibrary`
-
-Foram localizados, mas alguns clones ficaram incompletos durante o checkout Git:
-
 - `C:\Users\Usuario\Desktop\Subnautica 2.0-upstream\third-party\ECCLibrary`
 - `C:\Users\Usuario\Desktop\Subnautica 2.0-upstream\third-party\SealSub`
-- pastas `*-complete`/`*-fixed` podem conter apenas `.git`; validar antes de usar.
+- `C:\Users\Usuario\Desktop\Subnautica 2.0-upstream\third-party\VehicleFramework-source`
+- `C:\Users\Usuario\Desktop\Subnautica 2.0-upstream\third-party\ScanForAnything-source`
+- `C:\Users\Usuario\Desktop\Subnautica 2.0-upstream\third-party\Echelon-source`
 
-Fontes públicas localizadas e ainda pendentes de clone completo:
-
-- `https://github.com/32Kallies/ECCLibrary`
-- `https://github.com/NeisesMike/VehicleFramework`
-- `https://github.com/GreaterDane42/Subnautica-Mods`
-- `https://github.com/Indigocoder1/PrototypeSub`
-- `https://github.com/IronFox/Subnautica-Echelon`
+O clone de `PrototypeSub` (`https://github.com/Indigocoder1/PrototypeSub`) possui o commit local, mas o checkout do
+working tree está pendente por um `index.lock` deixado por processos Git concorrentes. Não usar essa cópia até os
+processos serem encerrados e o checkout ser validado.
 
 Os ZIPs locais dos mods FCS e do Alterra Hub contêm DLLs, `mod.json` e assets compilados; não substituem o código-fonte.
 
@@ -124,8 +119,8 @@ YouTube deve usar player oficial incorporado, sem extrair ou baixar conteúdo, p
 
 ## Próximos passos recomendados
 
-1. Corrigir/validar clones incompletos.
-2. Criar `docs/SOURCES.md` com mod, autor, URL, licença, framework e estado da fonte.
+1. Finalizar/validar o checkout pendente de PrototypeSub após liberar o `index.lock`.
+2. Manter `docs/SOURCES.md` com mod, autor, URL, licença, framework e estado da fonte.
 3. Verificar quais mods modernos já oferecem código compatível com BepInEx/Nautilus.
 4. Escolher o primeiro protótipo: Scanner de 5 km com detecção de leviatãs.
 5. Criar `src/Unhinged.Core` e uma DLL de teste sem alterar o jogo instalado.
@@ -142,4 +137,5 @@ YouTube deve usar player oficial incorporado, sem extrair ou baixar conteúdo, p
 - Clonado `zorgesho/SubnauticaMods` para referência do Console Improved e outros mods.
 - Criado o repositório do usuário e o plano inicial `docs/PLAN.md`.
 - O plano inicial foi commitado como `52e2ce0`.
-- Localizados vários repositórios públicos adicionais; alguns checkouts Git ainda precisam ser validados.
+- Clonados e validados ECCLibrary, SealSub, VehicleFramework, ScanForAnything e Echelon; PrototypeSub aguarda apenas
+  a liberação do checkout bloqueado.
