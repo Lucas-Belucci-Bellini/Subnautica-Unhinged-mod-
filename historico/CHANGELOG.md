@@ -199,3 +199,20 @@
 - Build da solução sem warnings. Onde o Nautilus marca um alvo como obsoleto
   (`RegisterOnFinishLoadingEvent`), o encaminhamento é mantido de propósito — o shim expõe
   a API antiga — com a razão registrada no código.
+
+### Adicionado (compat da API do jogo)
+- `GameCompat/HandReticleCompat`: devolve `SetInteractText`, `SetInteractTextRaw` e
+  `SetUseTextRaw` como **métodos de extensão declarados sem namespace**. Funciona porque o
+  membro de instância deixou de existir (o compilador então aceita a extensão) e porque,
+  sem `namespace`, a extensão vale em todo arquivo sem `using` — necessário, já que não há
+  como saber que `using` cada arquivo legado tem.
+- **Alterra Hub: 152 → 106 erros, com zero edição na fonte de terceiro.**
+
+### Registrado (a fronteira do truque)
+- **Tipo de argumento removido**: 5 chamadas passam `HandReticle.Hand.None`, e `Hand` não
+  existe mais. O erro é no argumento, antes da resolução de sobrecarga — extensão não
+  alcança, é edição na fonte.
+- **Estático removido de classe estática**: `CraftData.GetItemSize` →
+  `TechData.GetItemSize(TechType)`, mesma assinatura. Também fora do alcance da ponte.
+- O dumper de metadata ganhou resolução de tipo aninhado; foi assim que `GameInput.Button`
+  e `HandReticle.TextType` saíram de suposição para verificação.

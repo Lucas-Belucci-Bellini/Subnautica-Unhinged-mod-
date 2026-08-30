@@ -126,6 +126,39 @@ faltavam `UnlockedAtStart`, `EntityInfo` (`UWE.WorldEntityInfo`) e `DiscoverMess
 bases; e faltava a propriedade **`Order`** nos atributos de opções — usada pelo FCS para
 ordenar o painel, e invisível em qualquer leitura que não fosse compilar.
 
+## 3.55 Truque que evitou 46 edições: extensão em namespace global
+
+O `HandReticle` sozinho era **48 dos 152 erros**. A saída não foi editar 48 lugares na
+fonte do FCS — foi devolver a API antiga como **métodos de extensão declarados sem
+namespace**.
+
+Funciona por duas razões que se somam:
+
+1. **O membro de instância não existe mais**, então o compilador aceita a extensão. (Se
+   ainda existisse, o método de instância venceria e a extensão seria ignorada.)
+2. **Sem `namespace`, a extensão vale em todo arquivo**, sem `using`. Isso importa porque
+   não há como saber quais `using` cada arquivo legado tem — e o objetivo é não tocar neles.
+
+```csharp
+// sem namespace, de propósito
+public static class HandReticleLegacyExtensions
+{
+    public static void SetInteractText(this HandReticle r, string key)
+        => r.SetText(HandReticle.TextType.Hand, key, true, GameInput.Button.None);
+}
+```
+
+**Resultado: 152 → 106 erros, com zero edição na fonte de terceiro.**
+
+⚠️ **Onde o truque NÃO alcança**, e é bom saber a fronteira:
+
+- **Tipo de argumento que sumiu.** 5 chamadas passam `HandReticle.Hand.None`; o tipo `Hand`
+  não existe mais, e o erro acontece no argumento, **antes** da resolução de sobrecarga.
+  Extensão não ajuda — é edição na fonte (`GameInput.Button.None`).
+- **Membro estático removido de classe estática.** `CraftData.GetItemSize` migrou para
+  `TechData.GetItemSize` (mesma assinatura, devolve `Vector2int`). Não dá para estender uma
+  chamada estática: é `sed` de `CraftData.GetItemSize` → `TechData.GetItemSize`.
+
 ## 3.6 Estado atual: a ponte terminou; falta migrar a API do jogo
 
 Depois da segunda leva de handlers (`SpriteHandler`, `PDAHandler`, `CustomSoundHandler`,
@@ -134,9 +167,9 @@ Depois da segunda leva de handlers (`SpriteHandler`, `PDAHandler`, `CustomSoundH
 
 | Tipo do jogo | Erros | Migração |
 | --- | ---: | --- |
-| **`HandReticle`** | **48** | `SetInteractText(...)` → `SetText(TextType.Hand, ...)`; `SetInteractTextRaw` → `SetTextRaw(TextType.Hand, ...)`; `SetUseTextRaw` → `SetTextRaw(TextType.Use, ...)` |
+| ~~`HandReticle`~~ | ~~48~~ → **0** | ✅ **resolvido pela ponte** (extensão em namespace global — ver §3.55) |
 | `EndCreditsManager` | ~20 | créditos finais reescritos; campos (`centerText`, `leftText`, `goToPos`…) não existem mais |
-| **`CraftData.GetItemSize`** | 10 | migrou para o `TechData` **estático** do jogo (`propertyItemSize` / `defaultItemSize`) — a mesma reorganização que causa a colisão de nome do §2 |
+| **`CraftData.GetItemSize`** | 10 | → **`TechData.GetItemSize(TechType)`**, mesma assinatura (`Vector2int`). Chamada estática: exige `sed` na fonte, a ponte não alcança |
 | `PDA.screen`, `Player.pdaSpawn` | 10 | campos removidos |
 | `PDAEncyclopedia.EntryData.timeCapsule` | 4 | campo removido |
 | `InputField.SetText` | 2 | Unity UI |

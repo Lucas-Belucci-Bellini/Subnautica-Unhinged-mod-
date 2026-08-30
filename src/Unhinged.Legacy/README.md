@@ -92,6 +92,7 @@ A superfície necessária foi medida nas 20 classes do FCS que herdam dessas bas
 | `SpriteHandler`, `PDAHandler`, `CustomSoundHandler`, `PingHandler` | ✅ |
 | `Utility.SaveUtils` | ✅ |
 | `QModManager.API.QModServices` (sobre o `Chainloader`) | ✅ |
+| `GameCompat/HandReticleCompat` (API antiga do jogo, via extensão global) | ✅ |
 | `Json.ConfigFile` | ✅ |
 | `Utility.ModUtils` (save data — exige verificação própria) | pendente |
 | `SpriteHandler`, `KnownTechHandler`, `CraftTreeHandler`, `PDAHandler` | pendente |
