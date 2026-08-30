@@ -87,8 +87,14 @@ A superfície necessária foi medida nas 20 classes do FCS que herdam dessas bas
 | `Handlers.TechTypeHandler` (sobre o `EnumHandler` genérico) | ✅ |
 | `Utility.AudioUtils` (+ `SoundChannel` → buses por jogo) | ✅ |
 | `QModManager.API.ModLoading` + `LegacyModLoader` | ✅ |
+| `Options` + `Commands` (atributos) | ⚠️ compila, **mas ainda não registra** em jogo |
+| `Json.ConfigFile` | ✅ |
 | `Utility.ModUtils` (save data — exige verificação própria) | pendente |
-| `OptionsPanelHandler`, `ConsoleCommandsHandler`, `SpriteHandler`, `KnownTechHandler`, `CraftTreeHandler`, `PDAHandler` | pendente |
+| `SpriteHandler`, `KnownTechHandler`, `CraftTreeHandler`, `PDAHandler` | pendente |
+
+**Validado compilando de verdade:** o `FCS_AlterraHub` (232 arquivos) foi de **586 erros
+para 68** contra esta ponte, e **nenhum dos 68 menciona SMLHelper ou QModManager**.
+Detalhe em [`docs/PORTE-LEGADO.md`](../../docs/PORTE-LEGADO.md).
 
 Cada tipo é escrito **depois** de conferir a assinatura contra a assembly real. Nada é
 deduzido de memória.

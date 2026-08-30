@@ -27,6 +27,15 @@ namespace SMLHelper.V2.Assets
 
         /// <summary>Tamanho ocupado no inventário.</summary>
         public virtual Vector2int SizeInInventory => new Vector2int(1, 1);
+
+        /// <summary>Se a receita já nasce liberada. Sobrescrito por 6 classes do FCS.</summary>
+        public virtual bool UnlockedAtStart => true;
+
+        /// <summary>Dados de entidade de mundo, para spawn. Nulo = não spawna sozinho.</summary>
+        public virtual UWE.WorldEntityInfo EntityInfo => null;
+
+        /// <summary>Mensagem ao descobrir o item pela primeira vez.</summary>
+        public virtual string DiscoverMessage => null;
     }
 
     /// <summary>

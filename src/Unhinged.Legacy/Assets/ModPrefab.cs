@@ -90,8 +90,12 @@ namespace SMLHelper.V2.Assets
         /// </summary>
         protected virtual void ConfigurePrefab(CustomPrefab prefab) { }
 
-        /// <summary>Ícone do item. Nulo = sem ícone próprio.</summary>
-        public virtual Atlas.Sprite GetItemSprite() => null;
+        /// <summary>
+        /// Ícone do item. <c>protected</c>, não <c>public</c>: é assim que o SMLHelper o
+        /// declarava, e as 16 classes do FCS que o sobrescrevem usam
+        /// <c>protected override</c> — declarar mais aberto aqui dá CS0507.
+        /// </summary>
+        protected virtual Atlas.Sprite GetItemSprite() => null;
 
         internal virtual string FriendlyName => ClassID;
 

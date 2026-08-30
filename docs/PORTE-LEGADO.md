@@ -62,13 +62,42 @@ public class Plugin : BaseUnityPlugin
 `TargetInvocationException` para o log ficar legível, e **isola falhas**: um mod quebrado
 não derruba os outros.
 
+## 3.5 Resultado medido: Alterra Hub compilado contra a ponte
+
+Não é estimativa — foi compilado de verdade (232 arquivos do `FCS_AlterraHub` + o shared
+project `FCSCommon`, contra `Unhinged.Legacy` + `Subnautica.GameLibs` + Nautilus):
+
+| Etapa | Erros |
+| --- | ---: |
+| Primeira tentativa | **586** |
+| + `FCSCommon` (shared project) e `Newtonsoft.Json` | 216 |
+| + lacunas da ponte fechadas (Options, Commands, Json, bases corrigidas) | **68** |
+
+➡️ **Nenhum dos 68 erros restantes menciona `SMLHelper` ou `QModManager`.** A ponte cobre
+integralmente a superfície legada deste módulo. O que sobra é de outra natureza:
+
+| Restante | Quantidade | O que é |
+| --- | ---: | --- |
+| `CS0579` AssemblyInfo duplicado | 12 | **artefato do experimento** (dois `AssemblyInfo.cs`); some num projeto real |
+| `CS0115`/`CS0535`/`CS0722` | 16 | **mudança de API do jogo** — nenhum shim absorve, exige editar a fonte |
+| `CS0246`/`CS0234` restantes | ~40 | tipos do **próprio FCS** (`FCSPDA`, `CartDropDownHandler`, `Order`…), de outros projetos do repo que o experimento não ligou |
+
+As mudanças de API do jogo que apareceram, todas reais e todas exigindo edição na fonte:
+`CanDeconstruct` mudou de `out string` para `ref string`; `ITooltip` ganhou
+`GetTooltip(TooltipData)` e `showTooltipOnDrag`; `OnProtoSerialize`/`OnProtoDeserialize`
+mudaram de assinatura; e o alias de `TechData` descrito acima.
+
+Correções que este teste provocou na própria ponte — o valor de compilar em vez de supor:
+`GetItemSprite` precisava ser `protected` (16 classes do FCS o sobrescrevem assim, e
+`public` dava `CS0507`), e faltavam `UnlockedAtStart`, `EntityInfo` (`UWE.WorldEntityInfo`)
+e `DiscoverMessage` nas bases.
+
 ## 4. O que a ponte ainda não cobre
 
 | Pendente | Por quê |
 | --- | --- |
 | `ModUtils.Save` / `LoadSaveData` | Mexe em **dados de save**. Errar aqui corrompe o save do jogador, então merece verificação própria antes de ser escrito — não vale deduzir. |
-| `OptionsPanelHandler` | 8 usos no FCS; mapeia para `Nautilus.Options`, ainda não conferido. |
-| `ConsoleCommandsHandler` | 6 usos. |
+| `OptionsPanelHandler` / `ConsoleCommandsHandler` | ⚠️ Os **atributos** existem e fazem compilar, mas são **apenas de declaração**: o painel de opções e os comandos de console **ainda não são registrados em jogo**. Um mod portado agora terá as opções ignoradas — sem erro visível. Ligar ao `Nautilus.Options` e ao `ConsoleCommandsHandler` é o próximo passo. |
 | `SpriteHandler`, `KnownTechHandler`, `CraftTreeHandler`, `PDAHandler`, `BioReactorHandler` | ≤6 usos cada. |
 
 ## 5. Ordem recomendada

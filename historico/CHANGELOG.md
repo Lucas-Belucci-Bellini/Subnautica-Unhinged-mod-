@@ -128,3 +128,29 @@
   afetado. Documentado no guia.
 - `ModUtils.Save`/`LoadSaveData` ficaram de fora de propósito: mexem em dados de save, e
   errar ali corrompe o save do jogador. Merecem verificação própria em vez de dedução.
+
+### Validado (Alterra Hub compilado contra a ponte)
+- Compilação real do `FCS_AlterraHub` (232 arquivos + shared project `FCSCommon`):
+  **586 → 216 → 68 erros**, e **nenhum dos 68 restantes menciona SMLHelper ou
+  QModManager** — a ponte cobre integralmente a superfície legada do módulo.
+- O que sobra: 12 são artefato do experimento (AssemblyInfo duplicado), 16 são mudanças
+  reais de API do jogo (`CanDeconstruct` virou `ref string`, `ITooltip` ganhou membros,
+  `OnProtoSerialize` mudou) e o resto são tipos de outros projetos do próprio FCS.
+
+### Corrigido (achado pelo teste, não por dedução)
+- `GetItemSprite` tinha de ser `protected`, não `public`: 16 classes do FCS o sobrescrevem
+  como `protected override`, e o acesso mais aberto dava `CS0507`.
+- Faltavam `UnlockedAtStart`, `EntityInfo` (`UWE.WorldEntityInfo`) e `DiscoverMessage` nas
+  classes base.
+- Warnings `CS0108` nos `*ChangedEventArgs` resolvidos com `new` explícito — o
+  estreitamento de tipo é intencional, era assim no SMLHelper.
+
+### Adicionado
+- `Options`/`Commands`/`Json` no shim. ⚠️ Os atributos de opções e de console são
+  **apenas de declaração** por ora: fazem compilar, mas ainda não registram nada em jogo.
+  Registrado no guia para não ser descoberto dentro do jogo.
+
+### Verificado
+- `32Kallies/Socknautica` (link do operador) é **o mesmo repositório** que
+  `LeeTwentyThree/Socknautica` — 197 arquivos idênticos, mesmo commit de 24/04/2024, e
+  **também sem licença**. O bloqueio do S.O.C.K. Tank permanece.
