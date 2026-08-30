@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Referências de compilação para DLLs de terceiros que o Unhinged NÃO redistribui.
+
+  Mesmo princípio do Nautilus.targets: resolve por caminho, nunca por NuGet, e nunca
+  versiona o binário. `<Private>false</Private>` garante que o DLL não seja copiado
+  para a saída — ele já existe na instalação de quem joga.
+
+  As duas DLLs abaixo vêm do próprio repositório do FCS (pasta `Libs/`), que as
+  versiona. Nós não copiamos: apontamos para o clone upstream ou para `refs/`.
+
+  Ordem de resolução, para cada uma:
+    1. $(<Nome>Dll)         — propriedade passada no build
+    2. %<NOME>_DLL%         — variável de ambiente
+    3. refs\<Nome>.dll      — cópia local (ver refs/README.md)
+
+  Projetos que precisam delas definem UsesModRefs=true.
+-->
+<Project>
+
+  <PropertyGroup Condition="'$(UsesModRefs)' == 'true'">
+    <!-- MoreCyclopsUpgrades — usado por FCS_CyclopsUpgradeConsole (AuxiliaryUpgradeConsole). -->
+    <_McuCandidate Condition="'$(MoreCyclopsUpgradesDll)' != ''">$(MoreCyclopsUpgradesDll)</_McuCandidate>
+    <_McuCandidate Condition="'$(_McuCandidate)' == '' And '$(MORECYCLOPSUPGRADES_DLL)' != ''">$(MORECYCLOPSUPGRADES_DLL)</_McuCandidate>
+    <_McuCandidate Condition="'$(_McuCandidate)' == '' And Exists('$(MSBuildThisFileDirectory)..\refs\MoreCyclopsUpgrades.dll')">$(MSBuildThisFileDirectory)..\refs\MoreCyclopsUpgrades.dll</_McuCandidate>
+
+    <!-- NAudio — usado pelo JukeBox de FCS_HomeSolutions (Mp3FileReader, WaveFileWriter). -->
+    <_NAudioCandidate Condition="'$(NAudioDll)' != ''">$(NAudioDll)</_NAudioCandidate>
+    <_NAudioCandidate Condition="'$(_NAudioCandidate)' == '' And '$(NAUDIO_DLL)' != ''">$(NAUDIO_DLL)</_NAudioCandidate>
+    <_NAudioCandidate Condition="'$(_NAudioCandidate)' == '' And Exists('$(MSBuildThisFileDirectory)..\refs\NAudio.dll')">$(MSBuildThisFileDirectory)..\refs\NAudio.dll</_NAudioCandidate>
+  </PropertyGroup>
+
+  <Target Name="UnhingedCheckModRefs" BeforeTargets="ResolveReferences" Condition="'$(UsesModRefs)' == 'true'">
+    <Error Condition="'$(_McuCandidate)' == ''"
+           Text="MoreCyclopsUpgrades.dll não encontrado. Copie-o para refs\ (está em Libs\SN_Exp\ do clone do FCS), ou defina MORECYCLOPSUPGRADES_DLL. Veja refs/README.md." />
+    <Error Condition="'$(_NAudioCandidate)' == ''"
+           Text="NAudio.dll não encontrado. Copie-o para refs\ (está em Libs\SN_Stable\ do clone do FCS), ou defina NAUDIO_DLL. Veja refs/README.md." />
+  </Target>
+
+  <ItemGroup Condition="'$(UsesModRefs)' == 'true'">
+    <Reference Include="MoreCyclopsUpgrades" Condition="'$(_McuCandidate)' != ''">
+      <HintPath>$(_McuCandidate)</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="NAudio" Condition="'$(_NAudioCandidate)' != ''">
+      <HintPath>$(_NAudioCandidate)</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

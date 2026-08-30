@@ -1,0 +1,74 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Alterra Hub — os 7 modulos FCS num DLL so.
+
+    Por que um so: o FCS_AlterraHub ja e dependencia de compilacao dos outros seis.
+    Separa-los produziria pacotes que nao funcionam sozinhos, e o jogador teria de
+    acertar a ordem de carga na mao. Um pacote, uma versao, uma release.
+
+    A fonte e de terceiro (Field Creator Studios, MIT) — ver README.md. O porte para o
+    jogo moderno acontece pela ponte em src/Unhinged.Legacy, sem trocar os `using` do
+    codigo original.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>Unhinged.AlterraHub</AssemblyName>
+    <RootNamespace>FCS_AlterraHub</RootNamespace>
+    <Version>1.0.2</Version>
+    <Description>Suite Alterra Hub (FCStudios) portada para BepInEx 5 + Nautilus.</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <DefineConstants>SUBNAUTICA</DefineConstants>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <UsesNautilus>true</UsesNautilus>
+    <UsesModRefs>true</UsesModRefs>
+    <!-- Codigo de terceiro: nao vamos impor a convencao deste repositorio a ele, nem
+         poluir o build com avisos que nao vamos consertar arquivo a arquivo. -->
+    <NoWarn>$(NoWarn);CS1591;CS0618;CS0612;CS0414;CS0169;CS0649;CS0067</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      AssemblyInfo.cs de cada modulo: sete modulos viram UM assembly aqui, e os
+      atributos duplicados dao CS0579. O assembly do pacote e descrito acima.
+    -->
+    <Compile Remove="**\AssemblyInfo.cs" />
+
+    <!--
+      Codigo que os autores deixaram na arvore mas NAO compilam: nenhum destes
+      arquivos esta em nenhum .csproj deles. Incluir inventa erros que nao existem
+      (medi: 23 deles). Ver docs/PORTE-LEGADO.md 3.7, armadilha 3.
+    -->
+    <Compile Remove="FCS_AlterraHub\Mono\AlterraHub\AlterraHubController.cs" />
+    <Compile Remove="FCS_AlterraHub\Mono\AlterraHub\AlterraHubDisplay.cs" />
+    <Compile Remove="FCS_AlterraHub\Mono\AlterraHub\Encyclopedia\Encyclopedia.cs" />
+    <Compile Remove="FCS_AlterraHub\Mono\AlterraHub\PanelGroup.cs" />
+    <Compile Remove="FCS_AlterraHub\Mono\AlterraHub\PanelHelper.cs" />
+    <Compile Remove="FCS_AlterraHub\Mono\AlterraHub\TabButton.cs" />
+    <Compile Remove="FCS_AlterraHub\Mono\AlterraHub\TabGroup.cs" />
+    <Compile Remove="FCS_HomeSolutions\Mods\Stairs\Patchers\BaseGhostPatcher.cs" />
+    <Compile Remove="FCS_HomeSolutions\Mods\Stairs\Patchers\BasePatcher.cs" />
+    <Compile Remove="FCS_HomeSolutions\Mods\Stairs\Patchers\BuilderPatchers.cs" />
+    <Compile Remove="FCS_HomeSolutions\Mods\Stairs\Patchers\BuilderToolPatcher.cs" />
+    <Compile Remove="FCS_HomeSolutions\Mods\Stairs\Patchers\ConstructPatcher.cs" />
+    <Compile Remove="FCS_HomeSolutions\Mods\Stairs\Patchers\uGUI_BuilderMenuPatcher.cs" />
+    <Compile Remove="FCS_HomeSolutions\Patches\InGameMenuPatcher.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Subnautica.GameLibs" Version="82304.0.0-r.0" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" PrivateAssets="all" />
+    <PackageReference Include="UnityEngine.Modules" Version="2019.4.36" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <!-- Versao que o jogo carrega; ver a nota em Unhinged.Legacy.csproj sobre NU1903. -->
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" PrivateAssets="all" ExcludeAssets="runtime" NoWarn="NU1903" />
+    <ProjectReference Include="..\..\Unhinged.Legacy\Unhinged.Legacy.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\build\Nautilus.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\build\ModRefs.targets" />
+
+</Project>

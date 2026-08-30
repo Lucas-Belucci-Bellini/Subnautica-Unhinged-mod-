@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>Unhinged.Legacy</AssemblyName>
+    <RootNamespace>Unhinged.Legacy</RootNamespace>
+    <Version>0.1.0</Version>
+    <Description>Ponte SMLHelper V2 → Nautilus, para portar mods legados sem reescrevê-los.</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <UsesNautilus>true</UsesNautilus>
+    <!-- Os tipos daqui imitam a API do SMLHelper de propósito; nomes não seguem
+         a convenção deste repositório porque precisam bater com a API antiga. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Subnautica.GameLibs" Version="82304.0.0-r.0" PrivateAssets="all" />
+    <!-- Versao que o jogo ja carrega. `ExcludeAssets="runtime"` = so referencia de
+         compilacao: o DLL NAO vai para artifacts/, entao nada de terceiro e
+         redistribuido nem entra no repositorio.
+
+         NU1903 suprimido de proposito, e a supressao e o registro do motivo: o
+         advisory e da 12.0.3, mas essa e a versao que O JOGO carrega em memoria.
+         Referenciar uma mais nova aqui nao troca nada em runtime (continuaria a do
+         jogo) e ainda deixaria compilar contra API que o jogo nao tem. Nao ha DLL
+         nosso para atualizar: nao redistribuimos o pacote. Quem pode corrigir isso
+         e a Unknown Worlds, atualizando o que empacota com o jogo. -->
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" PrivateAssets="all" ExcludeAssets="runtime" NoWarn="NU1903" />
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" PrivateAssets="all" />
+    <PackageReference Include="UnityEngine.Modules" Version="2019.4.36" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\build\Nautilus.targets" />
+
+</Project>

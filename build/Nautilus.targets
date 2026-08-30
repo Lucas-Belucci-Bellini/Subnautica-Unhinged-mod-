@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Resolve o Nautilus.dll SEM NuGet e sem versionar binário de terceiro.
+
+  ⚠️ O pacote "Nautilus" do nuget.org é o OctopusDeploy-Nautilus, de outro autor e sem
+  relação com Subnautica. Referenciá-lo compila e quebra em runtime. Por isso a
+  referência aqui é por caminho, resolvido nesta ordem:
+
+    1. $(NautilusDll)            — propriedade passada no build
+    2. %NAUTILUS_DLL%            — variável de ambiente
+    3. refs\Nautilus.dll         — cópia local (ver refs/README.md)
+    4. %SUBNAUTICA_GAME_DIR%\BepInEx\plugins\Nautilus\Nautilus.dll — a instalação
+
+  Projetos que precisam do Nautilus definem UsesNautilus=true.
+-->
+<Project>
+
+  <PropertyGroup Condition="'$(UsesNautilus)' == 'true'">
+    <_NautilusCandidate Condition="'$(NautilusDll)' != ''">$(NautilusDll)</_NautilusCandidate>
+    <_NautilusCandidate Condition="'$(_NautilusCandidate)' == '' And '$(NAUTILUS_DLL)' != ''">$(NAUTILUS_DLL)</_NautilusCandidate>
+    <_NautilusCandidate Condition="'$(_NautilusCandidate)' == '' And Exists('$(MSBuildThisFileDirectory)..\refs\Nautilus.dll')">$(MSBuildThisFileDirectory)..\refs\Nautilus.dll</_NautilusCandidate>
+    <_NautilusCandidate Condition="'$(_NautilusCandidate)' == '' And '$(SUBNAUTICA_GAME_DIR)' != '' And Exists('$(SUBNAUTICA_GAME_DIR)\BepInEx\plugins\Nautilus\Nautilus.dll')">$(SUBNAUTICA_GAME_DIR)\BepInEx\plugins\Nautilus\Nautilus.dll</_NautilusCandidate>
+  </PropertyGroup>
+
+  <Target Name="UnhingedCheckNautilus" BeforeTargets="ResolveReferences" Condition="'$(UsesNautilus)' == 'true'">
+    <Error Condition="'$(_NautilusCandidate)' == ''"
+           Text="Nautilus.dll não encontrado. Copie-o para refs\ (veja refs/README.md), ou defina NAUTILUS_DLL, ou SUBNAUTICA_GAME_DIR. NÃO use o pacote NuGet chamado 'Nautilus' — aquele é o OctopusDeploy-Nautilus e não tem relação com o jogo." />
+  </Target>
+
+  <ItemGroup Condition="'$(UsesNautilus)' == 'true' And '$(_NautilusCandidate)' != ''">
+    <Reference Include="Nautilus">
+      <HintPath>$(_NautilusCandidate)</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

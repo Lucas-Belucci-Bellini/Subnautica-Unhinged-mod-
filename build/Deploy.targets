@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Deploy OPT-IN para a instalação local do jogo.
+
+  Regra 3 do briefing: nada é instalado, alterado ou removido dentro do jogo ou do
+  Vortex sem autorização explícita. Por isso este alvo:
+
+    * NÃO roda no build normal (só quando -p:DeployToGame=true é passado);
+    * lê o caminho do jogo de uma variável de AMBIENTE (SUBNAUTICA_GAME_DIR),
+      nunca de um caminho fixo no repositório;
+    * falha com mensagem clara se a variável não existir ou a pasta não for válida;
+    * copia apenas a DLL do próprio mod — nunca assemblies do jogo ou de terceiros.
+
+  Uso (PowerShell, na máquina do operador):
+      $env:SUBNAUTICA_GAME_DIR = "C:\Program Files (x86)\Steam\steamapps\common\Subnautica"
+      dotnet build src\Unhinged.Core\Unhinged.Core.csproj -c Release -p:DeployToGame=true
+
+  Sem DeployToGame=true o build só escreve em artifacts\, fora do jogo.
+-->
+<Project>
+
+  <Target Name="UnhingedDeployToGame" AfterTargets="Build" Condition="'$(DeployToGame)' == 'true'">
+
+    <PropertyGroup>
+      <_UnhingedGameDir>$(SUBNAUTICA_GAME_DIR)</_UnhingedGameDir>
+      <_UnhingedPluginDir>$(_UnhingedGameDir)\BepInEx\plugins\$(AssemblyName)</_UnhingedPluginDir>
+    </PropertyGroup>
+
+    <Error Condition="'$(_UnhingedGameDir)' == ''"
+           Text="DeployToGame=true, mas a variável de ambiente SUBNAUTICA_GAME_DIR não está definida. Defina-a com o caminho da pasta do Subnautica e tente de novo." />
+
+    <Error Condition="!Exists('$(_UnhingedGameDir)\BepInEx')"
+           Text="SUBNAUTICA_GAME_DIR aponta para '$(_UnhingedGameDir)', mas não há uma pasta BepInEx ali. Confirme o caminho do jogo antes de instalar." />
+
+    <Message Importance="high" Text="Unhinged: instalando $(AssemblyName).dll em $(_UnhingedPluginDir)" />
+
+    <MakeDir Directories="$(_UnhingedPluginDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(_UnhingedPluginDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
