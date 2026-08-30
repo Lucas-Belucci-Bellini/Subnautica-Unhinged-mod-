@@ -275,9 +275,9 @@ namespace FCS_HomeSolutions.Mods.Microwave.Mono
 
 #if SUBNAUTICA
             TechType foodData = TechType.None;
-            if (CraftData.cookedCreatureList.ContainsKey(techType))
+            if (UnhingedFood.CookedCreatureList.ContainsKey(techType))
             {
-                foodData = CraftData.cookedCreatureList[techType];
+                foodData = UnhingedFood.CookedCreatureList[techType];
 #else
             var foodData = TechData.GetProcessed(techType);
             if (foodData != TechType.None)
@@ -373,7 +373,7 @@ namespace FCS_HomeSolutions.Mods.Microwave.Mono
                 };
 #endif
 
-                //foreach (var item in CraftData.cookedCreatureList)
+                //foreach (var item in UnhingedFood.CookedCreatureList)
                 //{
                 //    _allowedTech.Add(item.Key);
                 //}

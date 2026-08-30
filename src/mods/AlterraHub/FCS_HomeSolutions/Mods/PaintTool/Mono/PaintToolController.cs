@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using FCS_AlterraHomeSolutions.Mono.PaintTool;
 using FCS_AlterraHub.Buildables;
@@ -388,9 +388,9 @@ namespace FCS_HomeSolutions.Mods.PaintTool.Mono
         {
             if (string.IsNullOrWhiteSpace(message))
             {
-                message = $"Change Template: {GameInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary)} | Color Sample {QPatch.Configuration.PaintToolColorSampleKeyCode}";
+                message = $"Change Template: {UnhingedInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary)} | Color Sample {QPatch.Configuration.PaintToolColorSampleKeyCode}";
             }
-            return $"Press Change Colors ({QPatch.Configuration.PaintToolSelectColorBackKeyCode})/({QPatch.Configuration.PaintToolSelectColorForwardKeyCode}) | Use Paint Can: {GameInput.GetBindingName(GameInput.Button.Reload, GameInput.BindingSet.Primary)} | {message}";
+            return $"Press Change Colors ({QPatch.Configuration.PaintToolSelectColorBackKeyCode})/({QPatch.Configuration.PaintToolSelectColorForwardKeyCode}) | Use Paint Can: {UnhingedInput.GetBindingName(GameInput.Button.Reload, GameInput.BindingSet.Primary)} | {message}";
         }
 
         public List<ColorTemplate> GetTemplates()

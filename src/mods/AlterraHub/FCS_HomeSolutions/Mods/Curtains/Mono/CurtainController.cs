@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using FCS_AlterraHub.Buildables;
 using FCS_AlterraHub.Helpers;
@@ -221,7 +221,7 @@ namespace FCS_HomeSolutions.Mods.Curtains.Mono
         public override bool OverrideCustomUseText(out string message)
         {
 
-            message = AuxPatchers.CurtainInteractionFormat(GameInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary));
+            message = AuxPatchers.CurtainInteractionFormat(UnhingedInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary));
             return true;
         }
     }
