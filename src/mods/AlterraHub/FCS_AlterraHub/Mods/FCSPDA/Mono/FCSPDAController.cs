@@ -428,14 +428,14 @@ namespace FCS_AlterraHub.Mods.FCSPDA.Mono
             UwePostProcessingManager.OpenPDA();
             SafeAnimator.SetBool(Player.main.armsController.animator, "using_pda", true);
 
-#if SUBNAUTICA
+            // PORTE — `PDA.screen` (o GameObject da tela viva) nao existe mais. A UI
+            // instanciada e o `PDA.ui`, um `uGUI_PDA`; o objeto dele e a tela.
             _pda.ui.soundQueue.PlayImmediately(_pda.ui.soundOpen);
-            if (_pda.screen.activeSelf)
+            var telaVanilla = _pda.ui != null ? _pda.ui.gameObject : null;
+            if (telaVanilla != null && telaVanilla.activeSelf)
             {
-                _pda.screen.SetActive(false);
+                telaVanilla.SetActive(false);
             }
-#else
-#endif
         }
 
         private bool DetemineIfInCinematicMode(Player main)
@@ -584,10 +584,16 @@ namespace FCS_AlterraHub.Mods.FCSPDA.Mono
             QuickLogger.Debug("In Find PDA",true);
             if (PdaCanvas == null)
             {
-#if SUBNAUTICA
-                PdaCanvas = PDAObj?.GetComponent<PDA>()?.screen?.gameObject?.GetComponent<Canvas>();
-#else
-#endif
+                // PORTE — idem: o Canvas era buscado no `screen`. O `canvasScaler` do
+                // `uGUI_PDA` mora no MESMO GameObject do Canvas (o CanvasScaler do Unity
+                // exige um Canvas ao lado), entao e o caminho mais firme ate ele. O
+                // GetComponentInParent cobre o caso do scaler nao estar ligado.
+                var pdaUi = PDAObj?.GetComponent<PDA>()?.ui;
+                PdaCanvas = pdaUi == null
+                    ? null
+                    : (pdaUi.canvasScaler != null
+                        ? pdaUi.canvasScaler.GetComponent<Canvas>()
+                        : pdaUi.GetComponentInParent<Canvas>());
                 Player main = Player.main;
                 _pda = main.GetPDA();
             }

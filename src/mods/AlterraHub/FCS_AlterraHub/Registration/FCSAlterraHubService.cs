@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -377,9 +377,6 @@ namespace FCS_AlterraHub.Registration
                             key = data.Key,
                             nodes = PDAEncyclopedia.ParsePath(entryData.Path),
                             path = entryData.Path,
-#if SUBNAUTICA
-                            timeCapsule = false,                            
-#endif
                             unlocked = entryData.Unlocked
                         });
 

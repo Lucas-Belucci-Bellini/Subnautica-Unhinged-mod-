@@ -216,11 +216,9 @@ namespace FCS_HomeSolutions.Mods.Stove.Mono
             {
                 RawTechType = cookingItem.TechType;
                 CookedTechType = cookingItem.ReturnItem;
-#if SUBNAUTICA
-                CraftData.craftingTimes.TryGetValue(cookingItem.ReturnItem, out float value);
-#else
+                // PORTE — `CraftData.craftingTimes` sumiu; a consulta virou
+                // `TechData.GetCraftTime`, que e exatamente o que o ramo BELOWZERO ja usava.
                 TechData.GetCraftTime(cookingItem.ReturnItem, out float value);
-#endif
                 CookingTime = value;
             }
         }

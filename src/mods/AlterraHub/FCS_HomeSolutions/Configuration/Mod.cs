@@ -19,6 +19,7 @@ using UnityEngine;
 
 namespace FCS_HomeSolutions.Configuration
 {
+    using ModCraftTreeRoot = Nautilus.Crafting.ModCraftTreeRoot;
     // O jogo moderno tem um `TechData` ESTATICO no namespace global, e membro de
     // namespace ganha de `using` de topo de arquivo — sem este alias, o tipo do
     // SMLHelper fica invisivel aqui (CS0722/CS0576). Tem de ficar DENTRO do
@@ -266,9 +267,24 @@ namespace FCS_HomeSolutions.Configuration
 
             if (CustomFoods.Any()) return;
 
-            var smlCTPatcher = typeof(CraftTreeHandler).Assembly.GetType("SMLHelper.V2.Patchers.CraftTreePatcher");
-            var customTrees = (Dictionary<CraftTree.Type, ModCraftTreeRoot>) smlCTPatcher
-                .GetField("CustomTrees", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
+            // PORTE — dois defeitos aqui, e o primeiro seria SILENCIOSO.
+            //
+            // 1. `typeof(CraftTreeHandler).Assembly` agora resolve para a PONTE, nao para
+            //    o SMLHelper, porque `CraftTreeHandler` passou a ser o nosso shim. A busca
+            //    por "SMLHelper.V2.Patchers.CraftTreePatcher" devolveria null e isto
+            //    quebraria em runtime, sem erro de compilacao. Aponta para o Nautilus.
+            // 2. `ModCraftTreeRoot` mora em `Nautilus.Crafting` (aliased no topo do
+            //    namespace); `CustomTrees` la e `internal static`, que o NonPublic pega.
+            var ctPatcher = typeof(Nautilus.Handlers.CraftTreeHandler).Assembly
+                .GetType("Nautilus.Patchers.CraftTreePatcher");
+            var customTreesField = ctPatcher?.GetField("CustomTrees", BindingFlags.NonPublic | BindingFlags.Static);
+            var customTrees = customTreesField?.GetValue(null) as Dictionary<CraftTree.Type, ModCraftTreeRoot>;
+            if (customTrees == null)
+            {
+                QuickLogger.Warning("Nao consegui ler as arvores de fabricacao do Nautilus; comidas customizadas ficam de fora.");
+                return;
+            }
+
             foreach (KeyValuePair<CraftTree.Type, ModCraftTreeRoot> entry in customTrees)
             {
                 QuickLogger.Debug($"Crafting Tree: {entry.Key}");

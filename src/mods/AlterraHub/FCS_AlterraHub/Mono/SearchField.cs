@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FCSCommon.Utilities;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -107,7 +107,10 @@ namespace FCS_AlterraHub.Mono
         {
             if (notify)
             {
-                _inputField?.SetText(value);
+                // PORTE — `InputField.SetText` nao existe no Unity; quem notifica e a
+                // atribuicao de `.text`, que dispara onValueChanged. E o par exato do
+                // `SetTextWithoutNotify` usado no ramo de baixo.
+                if (_inputField != null) _inputField.text = value;
             }
             else
             {

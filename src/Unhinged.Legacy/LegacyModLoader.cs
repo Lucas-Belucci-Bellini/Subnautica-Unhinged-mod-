@@ -27,13 +27,21 @@ namespace Unhinged.Legacy
         /// quebrado não deve derrubar o carregamento inteiro.
         /// </summary>
         /// <returns>Quantos métodos de entrada rodaram sem erro.</returns>
-        public static int Run(Assembly assembly, ManualLogSource log = null)
+        public static int Run(Assembly assembly, ManualLogSource log = null,
+            Func<Type, int> prioridade = null)
         {
             if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 
             var cores = SafeGetTypes(assembly, log)
                 .Where(t => t.GetCustomAttribute<QModCoreAttribute>() != null)
                 .ToList();
+
+            // A ordem importa e o `GetTypes()` NAO a garante. Quando varios mods legados
+            // moram no mesmo assembly (e o caso do pacote Alterra Hub, com 7 modulos), um
+            // deles costuma registrar os servicos que os outros consomem. Sem ordenar, o
+            // resultado varia por build — e falha de forma dificil de reproduzir.
+            if (prioridade != null)
+                cores = cores.OrderBy(prioridade).ThenBy(t => t.FullName, StringComparer.Ordinal).ToList();
 
             if (cores.Count == 0)
             {

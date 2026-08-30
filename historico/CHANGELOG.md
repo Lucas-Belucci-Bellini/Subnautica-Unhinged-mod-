@@ -41,6 +41,30 @@ teste feito aqui consegue responder — este ambiente é Linux, sem Subnautica.
 
 ## [Não lançado]
 
+### AlterraHub 1.0.2 — o pacote compila
+
+Os 7 módulos FCS compilam contra a ponte: **0 erros, 636 arquivos**, e o
+`Unhinged.AlterraHub.dll` (1,6 MB) existe. A progressão medida foi
+**101 → 0**, com o mascaramento por fase do Roslyn removido a cada passo.
+
+- **`Plugin.cs`** — o `[BepInPlugin]` que faltava. Sem ele o DLL compilaria e o
+  BepInEx o **ignoraria em silêncio**: os atributos `[QModCore]`/`[QModPatch]` do
+  FCS só marcam código, e quem os executava era o QModManager.
+- **`LegacyModLoader` passou a aceitar ordem.** O `GetTypes()` não garante ordem, e
+  o `FCS_AlterraHub` precisa registrar antes dos outros seis — eles consomem os
+  serviços dele. Sem ordenar, o registro sairia vazio de forma variável por build.
+- **`build/empacotar.sh` virou multi-pacote** (`core`, `alterrahub`): um ZIP e uma
+  versão por mod, para lançar um sem esperar o outro.
+
+Três decisões de comportamento, todas comentadas no código e no LEIA-ME do pacote:
+créditos finais (`CreditsScrollSeconds` a calibrar), gate de permissão do tooltip
+agora valendo também para ícones, e o som de coleta trocado pelo feedback padrão
+do jogo — as três APIs de som foram apagadas.
+
+**O pacote sozinho não funciona:** faltam os 7 asset bundles do FCS, que não são
+redistribuíveis por este projeto. E **nada foi aberto em jogo**.
+
+
 ### Adicionado
 - Esqueleto compilável `src/Unhinged.Core` (BepInEx 5 + Nautilus, `net472`), com logging
   e configuração via `ConfigEntry` — editável em jogo pelo ConfigurationManager.

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FCS_AlterraHub.Helpers;
@@ -722,7 +722,10 @@ namespace FCS_ProductionSolutions.Mods.AutoCrafter.Patches
                 _operation = _sender.CraftMachine.GetOperation();
                 _isRecursive = _sender.GetIsRecursive();
 
-                _isRecursiveToggle.Set(_isRecursive);
+                // PORTE — `Toggle.Set` deixou de ser acessivel de fora (e protected no
+                // Unity atual). `isOn` e o equivalente publico: atribuir dispara o
+                // onValueChanged, que e o que o `Set(bool)` antigo fazia por dentro.
+                _isRecursiveToggle.isOn = _isRecursive;
                 _continuousLimitSection.gameObject.SetActive(_isRecursive);
                 _isInfiniteCraft.gameObject.SetActive(_isRecursive);
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using FCS_AlterraHub.Extensions;
@@ -166,16 +166,17 @@ namespace FCS_HomeSolutions.Mods.MiniFountainFilter.Managers
                 var result = PlayerInteractionHelper.GivePlayerItem(techType);
                 if (result)
                 {
-#if SUBNAUTICA
-                    //uGUI_IconNotifier.main.Play(techType, uGUI_IconNotifier.AnimationType.From, null);
-                    FMODUWE.PlayOneShot(CraftData.GetPickupSound(techType), Player.main.transform.position, 1f);
-#else
-                    FMODAsset pickupSound = Player.main.GetPickupSound(TechData.GetSoundType(techType));
-                    if (pickupSound)
-                    {
-                        Utils.PlayFMODAsset(pickupSound, Player.main.transform.position, 20f);
-                    }
-#endif
+                    // PORTE — os DOIS ramos morreram: `CraftData.GetPickupSound`,
+                    // `Player.GetPickupSound` e `TechData.GetSoundType` foram todos apagados
+                    // (nenhum dos nomes aparece no Assembly-CSharp). Nao ha mais como obter o
+                    // FMODAsset de coleta a partir de um TechType — o som passou a viver no
+                    // proprio `Pickupable.PlayPickupSound()`, e aqui so existe o TechType,
+                    // porque o item ja foi entregue pelo GivePlayerItem acima.
+                    //
+                    // ⚠️ DIVERGENCIA: em vez de som, o feedback padrao do jogo ao ganhar item.
+                    // E a linha que o proprio autor do FCS tinha escrito e deixado comentada
+                    // logo acima — o icone tambem traz o som que o jogo toca com ele.
+                    uGUI_IconNotifier.main.Play(techType, uGUI_IconNotifier.AnimationType.From, null);
                     _mono.TankManager.RemoveWater(50);
                 }
 

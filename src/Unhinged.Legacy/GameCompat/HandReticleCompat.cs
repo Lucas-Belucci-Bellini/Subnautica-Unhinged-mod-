@@ -41,6 +41,17 @@ public static class HandReticleLegacyExtensions
     }
 
     /// <summary>Texto literal, sem passar pela tradução.</summary>
+    /// <summary>
+    /// Forma de 5 argumentos com a ultima <c>bool</c>: no SMLHelper ela era
+    /// <c>addInstructions</c>, não um <c>GameInput.Button</c> — daí o CS1503 quando só
+    /// existia a sobrecarga com Button. O jogo atual nao tem esse conceito separado,
+    /// entao a flag e absorvida: sem instrucao, sem botao.
+    /// </summary>
+    public static void SetInteractText(this HandReticle reticle, string primaryKey, string secondaryKey,
+        bool translate1, bool translate2, bool addInstructions)
+        => reticle.SetInteractText(primaryKey, secondaryKey, translate1, translate2,
+            addInstructions ? GameInput.Button.LeftHand : GameInput.Button.None);
+
     public static void SetInteractTextRaw(this HandReticle reticle, string primary)
         => reticle.SetTextRaw(HandReticle.TextType.Hand, primary);
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using FCS_AlterraHub.Buildables;
 using FCS_AlterraHub.Helpers;
 using FCS_AlterraHub.Registration;
@@ -400,11 +400,9 @@ namespace FCS_AlterraHub.Mods.FCSPDA.Mono.ScreenItems
                 entry.timeCapsuleId = null;
             }
 
-#if SUBNAUTICA
-            if (entryData == null || entryData.timeCapsule) return null;
-#else
+            // PORTE — `EntryData.timeCapsule` foi removido do jogo. O ramo BELOWZERO ja
+            // omitia a checagem; sem o campo, nao ha o que filtrar.
             if (entryData == null) return null;
-#endif
             CraftNode parent = PDAEncyclopedia.GetParent(entryData, true);
             if (parent[entryData.key] is not null) return null;
             

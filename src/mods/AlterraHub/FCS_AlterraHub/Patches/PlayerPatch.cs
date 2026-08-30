@@ -160,7 +160,10 @@ namespace FCS_AlterraHub.Patches
             defPDA = player.pda.prefabScreen;
 #endif
 
-            var pda = GameObject.Instantiate(AlterraHub.FcsPDAPrefab, default, default, true);
+            // PORTE — nao existe sobrecarga `Instantiate(Object, Vector3, Quaternion, bool)`.
+            // O `true` do original nao tinha destino: os dois `default` ja eram posicao e
+            // rotacao. Instancia na origem, sem pai — que e o que aqueles defaults diziam.
+            var pda = GameObject.Instantiate(AlterraHub.FcsPDAPrefab, Vector3.zero, Quaternion.identity);
             var canvas = pda.GetComponentInChildren<Canvas>();
             if (canvas != null)
                 canvas.sortingLayerID = 1479780821;
