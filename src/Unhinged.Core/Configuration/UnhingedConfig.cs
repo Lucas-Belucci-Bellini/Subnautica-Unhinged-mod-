@@ -31,6 +31,7 @@ namespace Unhinged.Core.Configuration
 
         public ConfigEntry<BalanceProfile> Profile { get; }
         public ConfigEntry<bool> VerboseLogging { get; }
+        public ConfigEntry<bool> WriteEnvironmentReport { get; }
 
         public ConfigEntry<bool> ScannerEnabled { get; }
         public ConfigEntry<float> ScannerRangeMeters { get; }
@@ -50,6 +51,12 @@ namespace Unhinged.Core.Configuration
             VerboseLogging = config.Bind(
                 SectionGeneral, "LogDetalhado", false,
                 "Log detalhado. Útil para diagnóstico; deixa o log grande.");
+
+            WriteEnvironmentReport = config.Bind(
+                SectionGeneral, "EscreverRelatorio", true,
+                "Escreve BepInEx/Unhinged-Relatorio.md a cada partida: mods carregados, "
+                + "mods que falharam e quais pilhas de modding estão presentes. "
+                + "É o arquivo a enviar ao relatar um problema. Desligue se não quiser o arquivo.");
 
             // Vanilla: defaultRange = 300 m, +50 m por upgrade, teto de 500 m
             // (valores lidos das constantes de MapRoomFunctionality em Assembly-CSharp).

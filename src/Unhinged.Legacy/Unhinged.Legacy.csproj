@@ -19,8 +19,15 @@
     <PackageReference Include="Subnautica.GameLibs" Version="82304.0.0-r.0" PrivateAssets="all" />
     <!-- Versao que o jogo ja carrega. `ExcludeAssets="runtime"` = so referencia de
          compilacao: o DLL NAO vai para artifacts/, entao nada de terceiro e
-         redistribuido nem entra no repositorio. -->
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" PrivateAssets="all" ExcludeAssets="runtime" />
+         redistribuido nem entra no repositorio.
+
+         NU1903 suprimido de proposito, e a supressao e o registro do motivo: o
+         advisory e da 12.0.3, mas essa e a versao que O JOGO carrega em memoria.
+         Referenciar uma mais nova aqui nao troca nada em runtime (continuaria a do
+         jogo) e ainda deixaria compilar contra API que o jogo nao tem. Nao ha DLL
+         nosso para atualizar: nao redistribuimos o pacote. Quem pode corrigir isso
+         e a Unknown Worlds, atualizando o que empacota com o jogo. -->
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" PrivateAssets="all" ExcludeAssets="runtime" NoWarn="NU1903" />
     <PackageReference Include="BepInEx.Core" Version="5.4.21" PrivateAssets="all" />
     <PackageReference Include="UnityEngine.Modules" Version="2019.4.36" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />

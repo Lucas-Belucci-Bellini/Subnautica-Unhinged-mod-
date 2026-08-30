@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using Unhinged.Core.Configuration;
+using Unhinged.Core.Diagnostics;
 using Unhinged.Core.Interop;
 
 namespace Unhinged.Core
@@ -55,9 +56,29 @@ namespace Unhinged.Core
                 return;
             }
 
-            // Inventário do que mais está carregado. Roda depois dos patches para que uma
-            // falha aqui não impeça o resto de subir — e serve de linha de base para
-            // qualquer diagnóstico posterior de conflito entre mods.
+            Log.LogInfo($"{UnhingedInfo.Name} carregado.");
+        }
+
+        /// <summary>
+        /// Inventário e relatório. Mora aqui, e **não** no <see cref="Awake"/>, por um
+        /// motivo que muda o resultado: o BepInEx instancia os plugins UM A UM durante o
+        /// chainload, e cada instanciação dispara o `Awake` daquele plugin na hora. Ou
+        /// seja, no nosso `Awake` o `Chainloader.PluginInfos` só tem os plugins carregados
+        /// ATÉ AQUI — quem vem depois de nós na ordem ainda não existe.
+        ///
+        /// Um inventário parcial não seria só incompleto, seria enganoso: mostraria
+        /// dezenas de mods "ausentes" que na verdade carregam normalmente.
+        ///
+        /// O `Start` do Unity roda só no primeiro quadro depois que os componentes foram
+        /// adicionados, e o chainload inteiro acontece dentro de um quadro. Então aqui a
+        /// lista está completa — é a diferença entre um diagnóstico e um boato.
+        /// </summary>
+        private void Start()
+        {
+            // Awake sempre roda antes de Start, mas ele pode ter saido cedo por falha do
+            // Harmony. Sem os dois, nao ha o que inventariar nem onde registrar.
+            if (Log == null || Settings == null) return;
+
             try
             {
                 ModRegistry.LogInventory(Log, Settings.VerboseLogging.Value);
@@ -67,7 +88,11 @@ namespace Unhinged.Core
                 Log.LogWarning($"Falha ao inventariar os mods carregados: {ex.Message}");
             }
 
-            Log.LogInfo($"{UnhingedInfo.Name} carregado.");
+            // O mesmo inventário, em arquivo curto e legível. O log do BepInEx tem
+            // dezenas de milhares de linhas de todos os mods; pedir para alguém
+            // garimpar aquilo é pedir para o diagnóstico não acontecer.
+            if (Settings.WriteEnvironmentReport.Value)
+                RelatorioDeAmbiente.Escrever(Log);
         }
 
         private void OnDestroy()

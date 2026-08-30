@@ -1,5 +1,44 @@
 # Changelog — Subnautica Unhinged
 
+## [0.1.0] — 2026-08-30 — primeiro pacote instalável
+
+Primeira versão que se instala e roda no jogo. É **base, não mega-mod**: não junta
+mods, não porta nada e não muda jogabilidade. Existe para responder o que nenhum
+teste feito aqui consegue responder — este ambiente é Linux, sem Subnautica.
+
+### Adicionado
+- **Pacote de release** (`build/empacotar.sh` → `dist/SubnauticaUnhinged-vX.Y.Z.zip`):
+  árvore `BepInEx/plugins/SubnauticaUnhinged/` que se mescla na pasta do jogo, com
+  `LICENSE`, `CREDITOS.md` e um `LEIA-ME.md` que diz o que a versão **não** faz.
+  O script recusa o pacote se um DLL de terceiro aparecer nele.
+- **`Diagnostics/RelatorioDeAmbiente`**: escreve `BepInEx/Unhinged-Relatorio.md` a cada
+  partida — mods carregados, mods que **falharam**, quais pilhas de modding estão
+  ativas (Nautilus vs. QModManager/SMLHelper), versão do jogo e do Unity. O
+  `LogOutput.log` tem dezenas de milhares de linhas de todos os mods; pedir para
+  alguém garimpar aquilo é pedir para o diagnóstico não acontecer. Desligável pela
+  chave `EscreverRelatorio`.
+- **`LICENSE` (GPL-3.0-or-later)** e **`CREDITOS.md`**. A licença não foi escolha de
+  gosto: o `Unhinged.Legacy` faz link com o Nautilus, que é GPL-3.0. Ou o conjunto é
+  GPL-3.0, ou não pode usar o Nautilus — e sem Nautilus não há ponte para o jogo
+  moderno. Texto copiado de gnu.org, não redigido aqui.
+- Ponte: `SMLHelper.V2.Assets.Equipable` e `SMLHelper.V2.Json.ExtensionMethods`.
+
+### Corrigido
+- **O inventário de mods era colhido cedo demais.** Estava no `Awake()`, mas o BepInEx
+  instancia os plugins **um a um** durante o chainload, e cada instanciação dispara o
+  `Awake` daquele plugin na hora — então `Chainloader.PluginInfos` só tinha os mods
+  carregados *até nós*. O relatório apontaria dezenas de mods como ausentes quando
+  carregam normalmente: não incompleto, **enganoso**. Movido para o `Start()`, que o
+  Unity só chama no quadro seguinte, com o chainload inteiro já concluído.
+
+### Medido
+- Os 7 módulos FCS compilando juntos contra a ponte: **636 arquivos, 47 com erro
+  (7,4%), 81 erros únicos**. Detalhe e os três baldes em `docs/PORTE-LEGADO.md` §3.7.
+
+### Não verificado
+- **Nada foi aberto dentro do jogo.** Asset, registro de prefab e dado de save seguem
+  sem verificação nenhuma. Compilar não é funcionar.
+
 ## [Não lançado]
 
 ### Adicionado

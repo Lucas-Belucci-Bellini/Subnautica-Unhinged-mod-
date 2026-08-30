@@ -18,3 +18,6 @@ publicized_assemblies/
 
 # Assemblies de referência locais: baixadas/copiadas, nunca versionadas.
 refs/*.dll
+
+# Artefatos de release (gerados por build, nao versionados)
+dist/
