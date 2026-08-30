@@ -68,5 +68,17 @@ namespace SMLHelper.V2.Crafting
         /// </summary>
         public static implicit operator Nautilus.Crafting.RecipeData(TechData data)
             => data?.ToRecipeData();
+
+        /// <summary>
+        /// Sentido inverso: o <c>CraftDataHandler.GetTechData</c> legado devolvia
+        /// <c>TechData</c>, e o Nautilus devolve <c>RecipeData</c>.
+        /// </summary>
+        public static implicit operator TechData(Nautilus.Crafting.RecipeData data)
+            => data == null ? null : new TechData
+            {
+                craftAmount = data.craftAmount,
+                Ingredients = data.Ingredients ?? new List<global::Ingredient>(),
+                LinkedItems = data.LinkedItems ?? new List<TechType>(),
+            };
     }
 }

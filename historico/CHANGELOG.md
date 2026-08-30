@@ -108,3 +108,23 @@
   `Buildable`, 1 `Craftable`).
 - Registrada outra quebra do jogo moderno: `TechData` virou tipo **estático global**, que
   ganha a resolução de nome contra o `using` e derruba o código legado com `CS0722`.
+
+### Adicionado (shim — terceira fatia, ponte funcional)
+- `Handlers.CraftDataHandler` e `Handlers.TechTypeHandler` — só os membros que o código
+  legado realmente chama, medidos no FCS e no S.O.C.K. Tank. O `TechTypeHandler` assenta
+  sobre o `EnumHandler` genérico que substituiu os handlers por enum no Nautilus.
+- `Utility.AudioUtils` com o enum `SoundChannel`, traduzindo para
+  `Nautilus.Utility.AudioUtils.BusPaths` — que é `partial` e tem **valores diferentes
+  entre Subnautica e Below Zero**. Referenciar a constante, em vez de copiar a string,
+  evita som mudo em silêncio.
+- `QModManager.API.ModLoading` (atributos `[QModCore]`/`[QModPatch]`/pré/pós) e
+  `LegacyModLoader`, que os executa a partir de um plugin BepInEx respeitando a ordem
+  original. Isola falhas por mod e desembrulha `TargetInvocationException` no log.
+- `docs/PORTE-LEGADO.md`: o procedimento mecânico de porte.
+
+### Notas
+- `TechData` colide com o tipo estático global do jogo e **a ponte não resolve isso pela
+  fonte legada** — é resolução de nome, e exige um `using TechData = ...` por arquivo
+  afetado. Documentado no guia.
+- `ModUtils.Save`/`LoadSaveData` ficaram de fora de propósito: mexem em dados de save, e
+  errar ali corrompe o save do jogador. Merecem verificação própria em vez de dedução.

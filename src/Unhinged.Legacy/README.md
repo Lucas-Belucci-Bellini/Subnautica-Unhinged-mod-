@@ -83,8 +83,14 @@ A superfície necessária foi medida nas 20 classes do FCS que herdam dessas bas
 | `Utility.ImageUtils` | ✅ |
 | `Compat` (`Atlas.Sprite`) | ✅ |
 | `Assets` (`ModPrefab`, `Spawnable`, `Craftable`, `Buildable`) | ✅ |
-| `Handlers.CraftDataHandler`, `TechTypeHandler`, `OptionsPanelHandler` | pendente |
-| `Utility.ModUtils`, `AudioUtils` · `QModManager.API` | pendente |
+| `Handlers.CraftDataHandler` (`GetTechData`, `SetEquipmentType`, `SetQuickSlotType`) | ✅ |
+| `Handlers.TechTypeHandler` (sobre o `EnumHandler` genérico) | ✅ |
+| `Utility.AudioUtils` (+ `SoundChannel` → buses por jogo) | ✅ |
+| `QModManager.API.ModLoading` + `LegacyModLoader` | ✅ |
+| `Utility.ModUtils` (save data — exige verificação própria) | pendente |
+| `OptionsPanelHandler`, `ConsoleCommandsHandler`, `SpriteHandler`, `KnownTechHandler`, `CraftTreeHandler`, `PDAHandler` | pendente |
 
 Cada tipo é escrito **depois** de conferir a assinatura contra a assembly real. Nada é
 deduzido de memória.
+
+Procedimento de porte passo a passo: [`docs/PORTE-LEGADO.md`](../../docs/PORTE-LEGADO.md).

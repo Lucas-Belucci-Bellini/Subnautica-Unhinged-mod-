@@ -68,6 +68,7 @@ mensagem clara em vez de adivinhar** um caminho.
 | [`docs/SCANNER_API_NOTES.md`](docs/SCANNER_API_NOTES.md) | **APIs verificadas** do scanner e dúvidas em aberto |
 | [`docs/ARQUITETURA-MEGAMOD.md`](docs/ARQUITETURA-MEGAMOD.md) | **As duas trilhas**: override para mod vivo, fork para mod morto |
 | [`docs/LICENCAS-E-FUSAO.md`](docs/LICENCAS-E-FUSAO.md) | **O que pode ir para um arquivo só** — licenças verificadas |
+| [`docs/PORTE-LEGADO.md`](docs/PORTE-LEGADO.md) | **Como portar um mod legado** — procedimento mecânico |
 | [`docs/PORTE-SOCK-TANK.md`](docs/PORTE-SOCK-TANK.md) | Avaliação do porte do S.O.C.K. Tank (legado → moderno) |
 | [`docs/MOD_COMPATIBILITY.md`](docs/MOD_COMPATIBILITY.md) | **Conflitos** entre os 75 mods instalados |
 | [`docs/SOURCES.md`](docs/SOURCES.md) | Fontes, autores e licenças |
