@@ -65,6 +65,56 @@ resultados na configuração.
 `timeLastScan`, `hologramRadius`, `onScanRangeChanged`, `storageContainer`, `upgradeSlots`,
 `powerConsumer`, `resourceNodes`, `mapBlips`, `cameraBlips`, e o estático `mapRooms`.
 
+
+## `MapRoomCamera` / `MapRoomScreen` — o drone ✅
+
+Verificado no mesmo metadata, ao implementar o mod.
+
+| Constante | Valor | Onde |
+| --- | --- | --- |
+| `maxCameraDistance` | **500** m | `MapRoomScreen` |
+| `acceleration` | 20 | `MapRoomCamera` |
+| `sidewaysTorque` | 45 | `MapRoomCamera` |
+| `stabilizeForce` | 15 | `MapRoomCamera` |
+
+> ⛔ **`maxCameraDistance` também é `const`** — mesma armadilha do alcance do scanner.
+> Não há campo em runtime para escrever: o 500 está embutido no IL de
+> `MapRoomCamera.CanBeControlled(MapRoomScreen)`.
+
+**Membros usados:** `CanBeControlled(MapRoomScreen)` → `bool`,
+`GetScreenDistance(MapRoomScreen)` → `float`, `ControlCamera(MapRoomScreen)`,
+`FreeCamera(bool)`, `Update()`, `IsControlled()`, `screenEffectModel`.
+
+**`MapRoomCameraScreenFX`:** propriedade `noiseFactor` (`float`), campo `_noiseFactor`.
+
+### Correção que o compilador fez, e vale registrar
+
+`MapRoomCamera.screenEffectModel` é um **`GameObject`**, não o componente
+`MapRoomCameraScreenFX`. Eu havia assumido que era o componente; escrever a suposição em
+código e compilar contra a assembly real desmentiu na hora — antes de virar
+`NullReferenceException` em jogo. O componente sai de
+`screenEffectModel.GetComponentInChildren<MapRoomCameraScreenFX>(true)`, resolvido uma
+vez ao assumir o controle (buscar por quadro num `Update` seria desperdício).
+
+**Compilar contra o metadata real é uma forma barata de testar suposição.**
+
+## Implementado em `src/mods/ScannerRoom` (v0.1.0)
+
+| Requisito do operador | Como |
+| --- | --- |
+| Drone ≥ 1000 m | Transpiler em `CanBeControlled`, trocando o literal 500. |
+| Scanner 5 km com todos os chips | Postfix em `UpdateScanRangeAndInterval` + `GetScanRange`. |
+| Degradação visual do drone | Postfix em `Update`, escrevendo `noiseFactor`. Só a imagem — blips e rastreamento intactos. |
+
+**Contagem de chips derivada, não recontada.** A vanilla já calcula `300 + n×50`, então
+`n = (alcance − 300) / 50`. Isso evita duplicar a regra de quais itens contam como
+upgrade — e se o jogo mudar essa regra, o mod acompanha sozinho.
+
+**O transpiler se auto-reporta.** Um transpiler que não casa com nada falha em
+silêncio; o patch conta as substituições e o plugin escreve no log se foram zero. Sem
+isso, o sintoma seria "o drone continua parando em 500 m" sem nada no log — o tipo de
+defeito que custa horas.
+
 ## `ResourceTrackerDatabase` — o registro que o scanner consulta ✅
 
 É **aqui** que mora a detecção; a sala de scanner só lê deste registro estático.

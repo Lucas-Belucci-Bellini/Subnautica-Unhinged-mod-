@@ -54,6 +54,12 @@ if [ "$ALVO" = "todos" ] || [ "$ALVO" = "core" ]; then
     artifacts/Unhinged.Legacy/Release/Unhinged.Legacy.dll
 fi
 
+if [ "$ALVO" = "todos" ] || [ "$ALVO" = "scannerroom" ]; then
+  V=$(grep -oP '(?<=<Version>)[^<]+' src/mods/ScannerRoom/ScannerRoom.csproj)
+  empacotar "ScannerRoom" "src/mods/ScannerRoom/ScannerRoom.csproj" "$V" "src/mods/ScannerRoom/LEIA-ME-RELEASE.md" \
+    artifacts/ScannerRoom/Release/Unhinged.ScannerRoom.dll
+fi
+
 if [ "$ALVO" = "todos" ] || [ "$ALVO" = "alterrahub" ]; then
   V=$(grep -oP '(?<=<Version>)[^<]+' src/mods/AlterraHub/AlterraHub.csproj)
   empacotar "AlterraHub" "src/mods/AlterraHub/AlterraHub.csproj" "$V" "src/mods/AlterraHub/LEIA-ME-RELEASE.md" \
