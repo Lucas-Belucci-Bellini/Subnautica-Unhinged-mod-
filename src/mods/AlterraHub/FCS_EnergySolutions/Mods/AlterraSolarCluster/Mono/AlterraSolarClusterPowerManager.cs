@@ -1,4 +1,4 @@
-﻿using FCS_AlterraHub.Helpers;
+using FCS_AlterraHub.Helpers;
 using FCS_AlterraHub.Mods.FCSPDA.Mono;
 using FCS_EnergySolutions.Configuration;
 using UnityEngine;
@@ -28,7 +28,7 @@ namespace FCS_EnergySolutions.Mods.AlterraSolarCluster.Mono
         {
             float time = Mathf.Clamp01((MaxDepth -
 #if SUBNAUTICA
-                                        Ocean.main.GetDepthOf(gameObject)
+                                        Ocean.GetDepthOf(gameObject)
 #else
                                         Ocean.GetDepthOf(gameObject)
 #endif

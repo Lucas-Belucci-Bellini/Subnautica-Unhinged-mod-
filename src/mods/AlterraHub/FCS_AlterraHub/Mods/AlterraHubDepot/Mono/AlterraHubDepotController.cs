@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -156,7 +156,7 @@ namespace FCS_AlterraHub.Mods.AlterraHubDepot.Mono
                 case "InventoryBTN":
                     TechType techType = (TechType) arg2;
 #if SUBNAUTICA
-                    var size = CraftData.GetItemSize(techType);
+                    var size = TechData.GetItemSize(techType);
 #else
                     var size = TechData.GetItemSize(techType);
 #endif

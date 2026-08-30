@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using FCS_AlterraHub.Enumerators;
@@ -20,6 +20,12 @@ using Sprite = Atlas.Sprite;
 
 namespace FCS_HomeSolutions.Mods.FireExtinguisherRefueler.Buildable
 {
+    // O jogo moderno tem um `TechData` ESTATICO no namespace global, e membro de
+    // namespace ganha de `using` de topo de arquivo — sem este alias, o tipo do
+    // SMLHelper fica invisivel aqui (CS0722/CS0576). Tem de ficar DENTRO do
+    // `namespace`. Ver docs/PORTE-LEGADO.md secao 2.
+    using TechData = SMLHelper.V2.Crafting.TechData;
+
     internal partial class FireExtinguisherRefuelerBuildable : SMLHelper.V2.Assets.Buildable
     {
         private readonly GameObject _prefab;
@@ -98,7 +104,7 @@ namespace FCS_HomeSolutions.Mods.FireExtinguisherRefueler.Buildable
 
                 var feItemSize =
 #if SUBNAUTICA
-                    CraftData.GetItemSize
+                    TechData.GetItemSize
 #else
                     TechData.GetItemSize
 #endif

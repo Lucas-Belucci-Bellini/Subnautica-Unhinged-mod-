@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using FCS_AlterraHub.Buildables;
@@ -182,7 +182,7 @@ namespace FCS_ProductionSolutions.Mods.MatterAnalyzer.Mono
                 if (!IsOperational) return;
 
 #if SUBNAUTICA
-                var size = CraftData.GetItemSize(_currentTechType);
+                var size = TechData.GetItemSize(_currentTechType);
 #else
                 var size = TechData.GetItemSize(_currentTechType);
 #endif
@@ -219,7 +219,7 @@ namespace FCS_ProductionSolutions.Mods.MatterAnalyzer.Mono
                 if (!IsOperational) return;
 
 #if SUBNAUTICA
-                var size = CraftData.GetItemSize(_currentTechType);
+                var size = TechData.GetItemSize(_currentTechType);
 #else
                 var size = TechData.GetItemSize(_currentTechType);
 #endif

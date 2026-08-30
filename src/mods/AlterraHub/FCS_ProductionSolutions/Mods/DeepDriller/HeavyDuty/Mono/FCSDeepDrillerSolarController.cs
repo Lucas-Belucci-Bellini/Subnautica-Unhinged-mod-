@@ -1,4 +1,4 @@
-﻿namespace FCS_ProductionSolutions.Mods.DeepDriller.HeavyDuty.Mono
+namespace FCS_ProductionSolutions.Mods.DeepDriller.HeavyDuty.Mono
 {
     internal class FCSDeepDrillerSolarController : HandTarget, IHandTarget
     {
@@ -9,7 +9,7 @@
             HandReticle main = HandReticle.main;
             main.SetIcon(HandReticle.IconType.Default);
 #if SUBNAUTICA
-            main.SetInteractText(_mono.DeepDrillerPowerManager.GetSolarPowerData(), false, HandReticle.Hand.None);
+            main.SetInteractText(_mono.DeepDrillerPowerManager.GetSolarPowerData(), false, GameInput.Button.None);
 #elif BELOWZERO
             main.SetText(HandReticle.TextType.Hand, _mono.DeepDrillerPowerManager.GetSolarPowerData(), false);
 #endif

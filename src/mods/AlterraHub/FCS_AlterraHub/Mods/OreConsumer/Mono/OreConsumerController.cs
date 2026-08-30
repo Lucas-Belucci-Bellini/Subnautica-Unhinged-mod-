@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FCS_AlterraHub.Buildables;
@@ -354,7 +354,7 @@ namespace FCS_AlterraHub.Mods.OreConsumer.Mono
         internal float GetDepth()
         {
 #if SUBNAUTICA
-            return gameObject == null ? 0f : Ocean.main.GetDepthOf(gameObject);
+            return gameObject == null ? 0f : Ocean.GetDepthOf(gameObject);
 #elif BELOWZERO
             return gameObject == null ? 0f : Ocean.GetDepthOf(gameObject);
 #endif

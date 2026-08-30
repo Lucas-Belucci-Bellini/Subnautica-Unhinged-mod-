@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using FCS_AlterraHub.Configuration;
 using FCS_AlterraHub.Helpers;
 using FCS_AlterraHub.Model;
@@ -77,7 +77,7 @@ namespace FCS_AlterraHub.Mods.FCSPDA.Mono.Dialogs
                 for (int i = 0; i < cartItem.ReturnAmount; i++)
                 {
 #if SUBNAUTICA
-                    totalSize.Add(CraftData.GetItemSize(cartItem.TechType));
+                    totalSize.Add(TechData.GetItemSize(cartItem.TechType));
 #else
                     totalSize.Add(TechData.GetItemSize(cartItem.TechType));
 #endif

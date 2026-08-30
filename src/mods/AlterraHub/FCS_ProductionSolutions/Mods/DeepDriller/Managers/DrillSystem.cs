@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -310,7 +310,7 @@ namespace FCS_ProductionSolutions.Mods.DeepDriller.Managers
         internal float GetDepth()
         {
 #if SUBNAUTICA
-            return gameObject == null ? 0f : Ocean.main.GetDepthOf(gameObject);
+            return gameObject == null ? 0f : Ocean.GetDepthOf(gameObject);
 #elif BELOWZERO
             return gameObject == null ? 0f : Ocean.GetDepthOf(gameObject);
 #endif
@@ -396,7 +396,7 @@ namespace FCS_ProductionSolutions.Mods.DeepDriller.Managers
                 _sb.Append(AlterraHub.PleaseClearHands());
 
 #if SUBNAUTICA
-                HandReticle.main.SetInteractText(_sb.ToString(), AlterraHub.ViewInPDA(), false, false, HandReticle.Hand.None);
+                HandReticle.main.SetInteractText(_sb.ToString(), AlterraHub.ViewInPDA(), false, false, GameInput.Button.None);
 #else
                 _sb.Append(AlterraHub.ViewInPDA());
                 HandReticle.main.SetTextRaw(HandReticle.TextType.Hand ,_sb.ToString());
@@ -427,7 +427,7 @@ namespace FCS_ProductionSolutions.Mods.DeepDriller.Managers
                 _sb.Append(Environment.NewLine);
 
 #if SUBNAUTICA
-                HandReticle.main.SetInteractText(_sb.ToString(), AlterraHub.ViewInPDA(), false, false, HandReticle.Hand.None);
+                HandReticle.main.SetInteractText(_sb.ToString(), AlterraHub.ViewInPDA(), false, false, GameInput.Button.None);
 #else
                 _sb.Append(AlterraHub.ViewInPDA());
                 HandReticle.main.SetTextRaw(HandReticle.TextType.Hand,_sb.ToString());

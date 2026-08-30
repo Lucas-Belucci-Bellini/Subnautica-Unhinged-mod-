@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -151,7 +151,7 @@ namespace FCS_AlterraHub.Systems
         {
             if(Subtitles.main == null) return;
 #if SUBNAUTICA
-            Subtitles.main.Add(message, null);
+            Subtitles.Add(message, null);
 #else
             Subtitles.main.AddRawLongInternal(0, new StringBuilder(message), 0, -1, -1);
 #endif

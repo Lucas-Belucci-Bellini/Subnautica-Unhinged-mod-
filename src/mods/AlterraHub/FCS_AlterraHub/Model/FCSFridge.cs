@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -233,7 +233,7 @@ namespace FCS_AlterraHub.Model
             QuickLogger.Debug($"RemoveItem Called {techType.AsString()}");
 
 #if SUBNAUTICA
-            var slotSize = CraftData.GetItemSize(techType);
+            var slotSize = TechData.GetItemSize(techType);
 #else
             var slotSize = TechData.GetItemSize(techType);
 #endif

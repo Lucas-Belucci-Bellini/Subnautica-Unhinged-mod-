@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using FCS_AlterraHub.Buildables;
 using FCS_AlterraHub.Configuration;
@@ -13,6 +13,11 @@ using Sprite = Atlas.Sprite;
 
 namespace FCS_AlterraHub.Mods.AlterraHubFabricatorBuilding.Spawnables
 {
+    // `Nautilus.Handlers.SpawnInfo` e `sealed`, entao a ponte nao consegue
+    // reexporta-lo por heranca como faz com os outros handlers. Alias e o caminho.
+    // Ver docs/PORTE-LEGADO.md 3.6 (armadilha do CS0104).
+    using SpawnInfo = Nautilus.Handlers.SpawnInfo;
+
     internal class DronePortPadHubNewFragSpawnable : Spawnable
     {
         private Color _color;

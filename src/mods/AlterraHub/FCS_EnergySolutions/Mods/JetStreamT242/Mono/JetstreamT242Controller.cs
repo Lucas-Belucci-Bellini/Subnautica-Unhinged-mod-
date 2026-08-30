@@ -1,4 +1,4 @@
-﻿using FCS_AlterraHub.Buildables;
+using FCS_AlterraHub.Buildables;
 using FCS_AlterraHub.Enumerators;
 using FCS_AlterraHub.Helpers;
 using FCS_AlterraHub.Model;
@@ -189,7 +189,7 @@ namespace FCS_EnergySolutions.Mods.JetStreamT242.Mono
         internal float GetDepth()
         {
 #if SUBNAUTICA
-            return gameObject == null ? 0f : Ocean.main.GetDepthOf(gameObject);
+            return gameObject == null ? 0f : Ocean.GetDepthOf(gameObject);
 #elif BELOWZERO
             return gameObject == null ? 0f : Ocean.GetDepthOf(gameObject);
 #endif

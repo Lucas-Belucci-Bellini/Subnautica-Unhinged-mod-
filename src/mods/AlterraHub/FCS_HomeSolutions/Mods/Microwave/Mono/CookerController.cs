@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using FCS_AlterraHub.Extensions;
 using FCS_AlterraHub.Helpers;
@@ -314,7 +314,7 @@ namespace FCS_HomeSolutions.Mods.Microwave.Mono
         private float GetCookingTime()
         {
 #if SUBNAUTICA
-            if (CraftData.GetCraftTime(_pendingItem.ReturnItem, out var duration))
+            if (TechData.GetCraftTime(_pendingItem.ReturnItem, out var duration))
 #else
             if (TechData.GetCraftTime(_pendingItem.ReturnItem, out var duration))
 #endif

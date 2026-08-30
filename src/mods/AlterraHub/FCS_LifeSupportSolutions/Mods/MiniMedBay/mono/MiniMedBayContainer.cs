@@ -1,4 +1,4 @@
-﻿using FCS_AlterraHub.Helpers;
+using FCS_AlterraHub.Helpers;
 using FCS_LifeSupportSolutions.Configuration;
 using FCSCommon.Utilities;
 using UnityEngine;
@@ -45,7 +45,7 @@ namespace FCS_LifeSupportSolutions.Mods.MiniMedBay.mono
         internal void RemoveSingleKit()
         {
 #if SUBNAUTICA
-            var size = CraftData.GetItemSize(TechType.FirstAidKit);
+            var size = TechData.GetItemSize(TechType.FirstAidKit);
 #elif BELOWZERO
             var size = TechData.GetItemSize(TechType.FirstAidKit);
 #endif

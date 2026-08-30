@@ -50,6 +50,31 @@ namespace SMLHelper.V2.Crafting
             Ingredients = ingredients ?? new List<global::Ingredient>();
         }
 
+        // ─────────────────────────────────────────────────────────────────────────
+        // Estáticos que MIGRARAM do `CraftData` para o `TechData` global do jogo.
+        //
+        // Estão aqui, e não numa classe à parte, por causa do alias: o arquivo legado
+        // que escreve `new TechData { … }` precisa do alias para enxergar ESTE tipo, e
+        // o alias então esconde o `TechData` global — onde estes métodos passaram a
+        // morar. Encaminhar daqui faz os dois sentidos coexistirem no mesmo arquivo,
+        // que é exatamente o que o código portado precisa.
+        //
+        // No jogo legado a chamada era `CraftData.GetItemSize(x)`; agora é
+        // `TechData.GetItemSize(x)`, e a fonte portada foi reescrita para isso.
+        // ─────────────────────────────────────────────────────────────────────────
+
+        /// <summary>Tamanho do item no inventário.</summary>
+        public static Vector2int GetItemSize(TechType techType)
+            => global::TechData.GetItemSize(techType);
+
+        /// <summary>Slot de equipamento a que o item pertence.</summary>
+        public static EquipmentType GetEquipmentType(TechType techType)
+            => global::TechData.GetEquipmentType(techType);
+
+        /// <summary>Tempo de fabricação. <c>false</c> = o item não declara tempo próprio.</summary>
+        public static bool GetCraftTime(TechType techType, out float result)
+            => global::TechData.GetCraftTime(techType, out result);
+
         public global::Ingredient GetIngredient(int index) => Ingredients[index];
 
         public TechType GetLinkedItem(int index) => LinkedItems[index];

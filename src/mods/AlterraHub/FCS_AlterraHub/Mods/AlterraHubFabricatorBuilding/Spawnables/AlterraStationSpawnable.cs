@@ -1,4 +1,4 @@
-﻿using FCS_AlterraHub.Buildables;
+using FCS_AlterraHub.Buildables;
 using FCS_AlterraHub.Configuration;
 using FCS_AlterraHub.Helpers;
 using FCS_AlterraHub.Managers;
@@ -10,6 +10,11 @@ using UWE;
 
 namespace FCS_AlterraHub.Mods.AlterraHubFabricatorBuilding.Spawnables
 {
+    // `Nautilus.Handlers.SpawnInfo` e `sealed`, entao a ponte nao consegue
+    // reexporta-lo por heranca como faz com os outros handlers. Alias e o caminho.
+    // Ver docs/PORTE-LEGADO.md 3.6 (armadilha do CS0104).
+    using SpawnInfo = Nautilus.Handlers.SpawnInfo;
+
     internal class AlterraStationSpawnable : Spawnable
     {
         public AlterraStationSpawnable() : base(Mod.AlterraHubStationClassID, Mod.AlterraHubStationFriendly, Mod.AlterraHubStationDescription)

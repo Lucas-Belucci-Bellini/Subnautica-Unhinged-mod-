@@ -288,6 +288,50 @@ um `using` faltando; o jogo removeu.
 **Este balde é o que separa "compila" de "funciona".** Nenhum deles tem resposta óbvia, e
 inventar chamada aqui é exatamente o que o `PROJECT_CONTEXT.md` proíbe.
 
+### Atualização: a medição agora sai do repositório, não do scratchpad
+
+O §3.7 acima foi medido numa cópia fora do repositório. Com a fonte do FCS importada
+para `src/mods/AlterraHub/` e um `AlterraHub.csproj` que compila os 7 módulos num DLL
+só, o número passou a sair do build do próprio repositório — que é o que vale.
+
+| momento | erros | arquivos |
+| --- | --- | --- |
+| fonte pristina, sem alias de `TechData` | 19 | 6 |
+| ⚠️ **mas** eram todos de declaração, mascarando o resto | | |
+| depois do alias + `ITooltip` portado (mascaramento removido) | **101** | 52 |
+| depois do balde mecânico | **59** | **29** |
+
+Ou seja: **42 erros e 23 arquivos resolvidos**, sem nenhuma decisão de comportamento.
+
+#### O que resolveu, e quanto cada coisa rendeu
+
+| conserto | erros |
+| --- | --- |
+| `CraftData.GetItemSize/GetEquipmentType/GetCraftTime` → `TechData.*` (migraram de classe) | 14 |
+| `Ocean.GetDepthOf` e `Subtitles.Add` viraram estáticos — tirar o `.main` | 7 |
+| `HandReticle.Hand.X` → `GameInput.Button.X` (o enum aninhado sumiu) | 4 |
+| `SpawnInfo`: alias, porque o tipo do Nautilus é `sealed` | 4 |
+| `CraftTreeHandler`, `KnownTechHandler`, `BioReactorHandler` na ponte | 4 |
+| `CraftData.techData` → `CraftDataHandler.GetTechData` | 4 |
+| `HashSet.AddIfNotPresent` e `Queue.TryDequeue` (extensões) | 4 |
+| `ITooltip` portado para a forma nova | 2 |
+
+#### Duas descobertas que mudam como se lê o resto
+
+**1. Os dois jogos convergiram — mas só em parte.** A fonte do FCS tem 210 arquivos com
+`#if SUBNAUTICA / #elif BELOWZERO`, e em vários casos a API do Subnautica **atual** é a
+que estava no ramo BELOWZERO: `ITooltip.GetTooltip(TooltipData)`, `Ocean.GetDepthOf`
+estático. Isso sugeriria compilar tudo com `BELOWZERO`.
+
+**Medi antes de acreditar: dá 160 erros contra 101.** A convergência é parcial, e o
+conserto continua sítio a sítio. A hipótese era boa e estava errada — o barato foi
+testá-la.
+
+**2. `BioReactorHandler` não existe no Nautilus.** Conferido no metadata: zero tipos com
+"BioReactor" no nome. O que existe é a tabela do próprio jogo,
+`BaseBioReactor.charge`, um dicionário estático público — que é onde o SMLHelper
+escrevia. A ponte escreve nela também; é a mesma coisa, não uma aproximação.
+
 ### O que este número não diz
 
 Ele mede **só a suíte FCS** (7 dos mods instalados) e mede **só compilação**. Nada disso

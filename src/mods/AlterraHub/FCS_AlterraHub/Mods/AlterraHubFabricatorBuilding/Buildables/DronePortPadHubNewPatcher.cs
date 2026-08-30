@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using FCS_AlterraHub.Mods.AlterraHubFabricatorBuilding.Mono.DroneSystem;
@@ -17,6 +17,12 @@ using RecipeData = SMLHelper.V2.Crafting.TechData;
 
 namespace FCS_AlterraHub.Mods.AlterraHubFabricatorBuilding.Buildables
 {
+    // O jogo moderno tem um `TechData` ESTATICO no namespace global, e membro de
+    // namespace ganha de `using` de topo de arquivo — sem este alias, o tipo do
+    // SMLHelper fica invisivel aqui (CS0722/CS0576). Tem de ficar DENTRO do
+    // `namespace`. Ver docs/PORTE-LEGADO.md secao 2.
+    using TechData = SMLHelper.V2.Crafting.TechData;
+
     internal class DronePortPadHubNewPatcher : SMLHelper.V2.Assets.Buildable
     {
         public override TechGroup GroupForPDA => TechGroup.ExteriorModules;

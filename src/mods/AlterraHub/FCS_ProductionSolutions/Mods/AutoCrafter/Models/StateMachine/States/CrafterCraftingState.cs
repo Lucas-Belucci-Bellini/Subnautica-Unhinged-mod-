@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using FCS_AlterraHub.Extensions;
@@ -574,7 +574,7 @@ namespace FCS_ProductionSolutions.Mods.AutoCrafter.Models.StateMachine.States
         private static bool CheckIfInvalidEquipmentType(TechType ingredientTechType)
         {
 #if SUBNAUTICA
-            EquipmentType equipmentType = CraftData.GetEquipmentType(ingredientTechType);
+            EquipmentType equipmentType = TechData.GetEquipmentType(ingredientTechType);
 #else
             EquipmentType equipmentType = TechData.GetEquipmentType(ingredientTechType);
 #endif

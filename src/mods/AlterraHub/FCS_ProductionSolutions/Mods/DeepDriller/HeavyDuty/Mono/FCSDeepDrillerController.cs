@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using FCS_AlterraHub.Buildables;
 using FCS_AlterraHub.Enumerators;
@@ -411,7 +411,7 @@ namespace FCS_ProductionSolutions.Mods.DeepDriller.HeavyDuty.Mono
                     Mathf.RoundToInt(DeepDrillerPowerManager.GetSourcePowerCapacity(DeepDrillerPowerSources.Solar))));
 
 #if SUBNAUTICA
-                HandReticle.main.SetInteractText(_sb.ToString(), AlterraHub.ViewInPDA(),false,false,HandReticle.Hand.None);
+                HandReticle.main.SetInteractText(_sb.ToString(), AlterraHub.ViewInPDA(),false,false,GameInput.Button.None);
 #else
                 _sb.Append(AlterraHub.ViewInPDA());
                 HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, _sb.ToString());

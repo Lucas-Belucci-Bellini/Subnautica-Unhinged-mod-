@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using FCS_AlterraHub.Buildables;
 using FCS_AlterraHub.Enumerators;
@@ -20,6 +20,12 @@ using Sprite = Atlas.Sprite;
 
 namespace FCS_LifeSupportSolutions.Mods.BaseOxygenTank.Buildable
 {
+    // O jogo moderno tem um `TechData` ESTATICO no namespace global, e membro de
+    // namespace ganha de `using` de topo de arquivo — sem este alias, o tipo do
+    // SMLHelper fica invisivel aqui (CS0722/CS0576). Tem de ficar DENTRO do
+    // `namespace`. Ver docs/PORTE-LEGADO.md secao 2.
+    using TechData = SMLHelper.V2.Crafting.TechData;
+
     internal class BaseOxygenTankPatch : SMLHelper.V2.Assets.Buildable
     {
         private bool _isKitType;

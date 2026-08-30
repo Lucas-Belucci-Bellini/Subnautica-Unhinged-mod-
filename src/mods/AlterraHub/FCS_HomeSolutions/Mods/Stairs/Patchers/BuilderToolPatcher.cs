@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -77,7 +77,7 @@ namespace FCS_HomeSolutions.Mods.Stairs.Patchers
 	//			}
 	//			if (constructable.techType == TechType.Sign && constructable.gameObject.transform.GetComponent<LoopRefreshEnergyController>() != null)
 	//			{
-	//				HandReticle.main.SetInteractText(CyclopsHatchConnector.CyclopsHatchConnectorName, false, HandReticle.Hand.None);
+	//				HandReticle.main.SetInteractText(CyclopsHatchConnector.CyclopsHatchConnectorName, false, GameInput.Button.None);
 	//				return false;
 	//			}
 	//			return true;

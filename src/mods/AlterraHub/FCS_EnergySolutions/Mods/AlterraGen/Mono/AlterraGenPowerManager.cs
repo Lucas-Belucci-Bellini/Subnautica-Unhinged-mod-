@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FCS_AlterraHub.Enumerators;
@@ -98,7 +98,7 @@ namespace FCS_EnergySolutions.Mods.AlterraGen.Mono
             var multiplier = 0f;
 
 #if SUBNAUTICA
-            var size = CraftData.GetItemSize(techType);
+            var size = TechData.GetItemSize(techType);
 #else
                     var size = TechData.GetItemSize(techType);
 #endif

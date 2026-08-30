@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -185,7 +185,7 @@ namespace FCS_ProductionSolutions.Mods.DeepDriller.HeavyDuty.Mono
         private float GetDepthScalar()
         {
 #if SUBNAUTICA
-            float time = Mathf.Clamp01((MaxDepth - Ocean.main.GetDepthOf(base.gameObject)) / MaxDepth);
+            float time = Mathf.Clamp01((MaxDepth - Ocean.GetDepthOf(base.gameObject)) / MaxDepth);
 #elif BELOWZERO
             float time = Mathf.Clamp01((MaxDepth - Ocean.GetDepthOf(base.gameObject)) / MaxDepth);
 #endif
@@ -425,7 +425,7 @@ namespace FCS_ProductionSolutions.Mods.DeepDriller.HeavyDuty.Mono
         public bool CanBeStored(int amount, TechType techType)
         {
 #if SUBNAUTICA
-            var equipType = CraftData.GetEquipmentType(techType);
+            var equipType = TechData.GetEquipmentType(techType);
 #elif BELOWZERO
     var equipType = TechData.GetEquipmentType(techType);
 #endif
