@@ -176,3 +176,26 @@
 - Regra de porte descoberta: **onde o FCS tem `#if BELOWZERO`, o Subnautica moderno
   costuma precisar do ramo do Below Zero** — os dois jogos convergiram. O `ITooltip` é o
   caso exemplar: a implementação certa já estava lá, desativada por `#if`.
+
+### Adicionado (segunda leva de handlers — a ponte fecha para o Alterra Hub)
+- `SpriteHandler`, `PDAHandler`, `CustomSoundHandler`, `SaveUtils`: encaminhamento direto
+  para os equivalentes do Nautilus.
+- `PingHandler`: o Nautilus **removeu** o handler de ping — não há tipo `Ping*` nele. O
+  shim reconstrói o comportamento sobre o `EnumHandler` genérico mais o registro do sprite
+  no grupo `Pings`, que o handler antigo fazia junto.
+- `OptionsPanelHandler.RegisterModOptions` + base `ModOptions` (o caminho que o FCS usa,
+  8 chamadas). O caminho por **atributos** segue apenas declarativo.
+- `QModManager.API.QModServices` reimplementado sobre o `Chainloader` do BepInEx —
+  `ModPresent`, `FindModById`, `GetMyMod`, `AddCriticalMessage`. O QModManager não existe
+  no ramo moderno, mas o `Chainloader` responde melhor às mesmas perguntas.
+- `LegacyLog`: log próprio da ponte, já que ela é carregada por qualquer mod portado e não
+  pode depender de um plugin específico.
+
+### Resultado
+- Alterra Hub: **164 → 152 erros, e nenhum é mais da ponte.** Todos são API do jogo que
+  mudou: `HandReticle` (48, um terço do total), `EndCreditsManager` (~20),
+  `CraftData.GetItemSize` (10, migrou para o `TechData` estático), `PDA.screen`,
+  `Player.pdaSpawn` e afins. O mapa de migração está no guia.
+- Build da solução sem warnings. Onde o Nautilus marca um alvo como obsoleto
+  (`RegisterOnFinishLoadingEvent`), o encaminhamento é mantido de propósito — o shim expõe
+  a API antiga — com a razão registrada no código.

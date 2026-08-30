@@ -87,7 +87,11 @@ A superfície necessária foi medida nas 20 classes do FCS que herdam dessas bas
 | `Handlers.TechTypeHandler` (sobre o `EnumHandler` genérico) | ✅ |
 | `Utility.AudioUtils` (+ `SoundChannel` → buses por jogo) | ✅ |
 | `QModManager.API.ModLoading` + `LegacyModLoader` | ✅ |
-| `Options` + `Commands` (atributos) | ⚠️ compila, **mas ainda não registra** em jogo |
+| `Options` (atributos) + `Commands` | ⚠️ compila, **mas ainda não registra** em jogo |
+| `OptionsPanelHandler.RegisterModOptions` + `ModOptions` | ✅ (o caminho por atributos não) |
+| `SpriteHandler`, `PDAHandler`, `CustomSoundHandler`, `PingHandler` | ✅ |
+| `Utility.SaveUtils` | ✅ |
+| `QModManager.API.QModServices` (sobre o `Chainloader`) | ✅ |
 | `Json.ConfigFile` | ✅ |
 | `Utility.ModUtils` (save data — exige verificação própria) | pendente |
 | `SpriteHandler`, `KnownTechHandler`, `CraftTreeHandler`, `PDAHandler` | pendente |

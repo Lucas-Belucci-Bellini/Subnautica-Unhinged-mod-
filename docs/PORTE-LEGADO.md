@@ -126,6 +126,25 @@ faltavam `UnlockedAtStart`, `EntityInfo` (`UWE.WorldEntityInfo`) e `DiscoverMess
 bases; e faltava a propriedade **`Order`** nos atributos de opções — usada pelo FCS para
 ordenar o painel, e invisível em qualquer leitura que não fosse compilar.
 
+## 3.6 Estado atual: a ponte terminou; falta migrar a API do jogo
+
+Depois da segunda leva de handlers (`SpriteHandler`, `PDAHandler`, `CustomSoundHandler`,
+`PingHandler`, `SaveUtils`, `OptionsPanelHandler`, `QModServices`), o Alterra Hub está em
+**152 erros — e nenhum deles é da ponte.** Todos são API do jogo que mudou:
+
+| Tipo do jogo | Erros | Migração |
+| --- | ---: | --- |
+| **`HandReticle`** | **48** | `SetInteractText(...)` → `SetText(TextType.Hand, ...)`; `SetInteractTextRaw` → `SetTextRaw(TextType.Hand, ...)`; `SetUseTextRaw` → `SetTextRaw(TextType.Use, ...)` |
+| `EndCreditsManager` | ~20 | créditos finais reescritos; campos (`centerText`, `leftText`, `goToPos`…) não existem mais |
+| **`CraftData.GetItemSize`** | 10 | migrou para o `TechData` **estático** do jogo (`propertyItemSize` / `defaultItemSize`) — a mesma reorganização que causa a colisão de nome do §2 |
+| `PDA.screen`, `Player.pdaSpawn` | 10 | campos removidos |
+| `PDAEncyclopedia.EntryData.timeCapsule` | 4 | campo removido |
+| `InputField.SetText` | 2 | Unity UI |
+| resto | ~58 | construtores, acessibilidade, conversões, `Text`→`TextMeshProUGUI` |
+
+➡️ **`HandReticle` sozinho é um terço.** Migrá-lo é o passo de maior retorno, e é mecânico:
+três métodos viraram dois, com o destino do texto passando a ser um parâmetro `TextType`.
+
 ## 4. O que a ponte ainda não cobre
 
 | Pendente | Por quê |
