@@ -90,3 +90,21 @@
 - Decorrência: `1.0.0-pre.53` **é a versão atual** do Nautilus (bate com o `Version.targets`
   do master), não uma versão velha. A instalação do operador está em dia — `MOD_COMPATIBILITY.md §2`
   foi reescrito.
+
+### Adicionado (shim — segunda fatia)
+- `Compat/AtlasSprite.cs`: `Atlas.Sprite` **não existe mais** no jogo moderno (o namespace
+  sumiu das duas assemblies). O shim devolve o tipo sobre `UnityEngine.Sprite`, com
+  conversão implícita nos dois sentidos — os **85 arquivos** do FCS que fazem
+  `using Sprite = Atlas.Sprite;` não precisam ser editados.
+- `Utility.ImageUtils` encaminhando para o Nautilus, absorvendo a diferença de tipo de sprite.
+- `Assets`: `ModPrefab`, `Spawnable`, `Craftable`, `Buildable` — a ponte entre a API por
+  **herança** do SMLHelper e a por **composição** do Nautilus (`CustomPrefab` + gadgets
+  `SetRecipe`/`SetPdaGroupCategory`/`SetUnlock`). Cobre os **17 membros** medidos nas 20
+  classes do FCS que herdam dessas bases.
+
+### Corrigido
+- Medição anterior de `Buildable` (282) estava inflada: quase tudo era `Buildables` e nomes
+  de classes do próprio FCS. A herança real são **20 classes** (13 `Spawnable`, 6
+  `Buildable`, 1 `Craftable`).
+- Registrada outra quebra do jogo moderno: `TechData` virou tipo **estático global**, que
+  ganha a resolução de nome contra o `using` e derruba o código legado com `CS0722`.

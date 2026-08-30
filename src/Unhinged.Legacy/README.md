@@ -38,8 +38,53 @@ O mapeamento segue o guia oficial
 [`sml2-to-nautilus`](https://github.com/SubnauticaModding/Nautilus/blob/master/Nautilus/Documentation/guides/sml2-to-nautilus.md),
 não dedução.
 
+## Quebras do jogo moderno que este shim absorve
+
+Descobertas lendo `Assembly-CSharp` do build atual — não são teoria, é o que impede o
+código legado de compilar hoje:
+
+**1. `Atlas.Sprite` não existe mais.** O namespace `Atlas` sumiu das duas assemblies do
+jogo; o substituto é `UnityEngine.Sprite`. Só no FCS são **85 arquivos** com
+`using Sprite = Atlas.Sprite;`. `Compat/AtlasSprite.cs` devolve o tipo, com conversão
+implícita nos dois sentidos — os 85 arquivos não precisam ser tocados.
+
+**2. `TechData` agora é um tipo estático do jogo, no namespace global.** Ele ganha a
+resolução de nome contra o `SMLHelper.V2.Crafting.TechData` importado por `using`, então
+qualquer uso não qualificado quebra com `CS0722`. O shim qualifica por extenso onde
+precisa.
+
+## A ponte herança → composição
+
+É a diferença de fundo entre as duas APIs. O SMLHelper era **herança** (derive e
+sobrescreva `GetGameObject`, `ClassID`, `GetBlueprintRecipe`…); o Nautilus é **composição**
+(monte um `CustomPrefab` e pendure gadgets).
+
+`ModPrefab` guarda um `CustomPrefab` por dentro e, no `Patch()`, liga os membros
+sobrescritos aos gadgets equivalentes — `SetRecipe`, `SetPdaGroupCategory`, `SetUnlock`.
+A classe derivada segue escrita como sempre foi.
+
+A superfície necessária foi medida nas 20 classes do FCS que herdam dessas bases
+(13 `Spawnable`, 6 `Buildable`, 1 `Craftable`): `TechType` (79 usos), `ClassID` (40),
+`AssetsFolder` (39), `GetGameObject` (21), `GetItemSprite` (18), `OnFinishedPatching` (17),
+`GroupForPDA`/`CategoryForPDA` (9 cada), `Patch` (8), `GetBlueprintRecipe` (8),
+`OnStartedPatching` (7), `PrefabFileName`/`IconFileName`/`GetGameObjectAsync` (4 cada).
+**17 membros** — todos implementados.
+
+> ⚠️ A contagem bruta de `Buildable` (282) que aparecia numa versão anterior desta tabela
+> estava inflada: quase tudo era `Buildables` (268, outro símbolo) e nomes de classes do
+> próprio FCS. O que importa é a herança, e são 20 classes.
+
 ## Estado
 
-Implementado: `Crafting` (`Ingredient`, `TechData`) e `Handlers.LanguageHandler`.
-O resto entra por ordem de uso da tabela acima — cada tipo com a assinatura conferida
-contra a assembly real antes de ser escrito.
+| Área | Situação |
+| --- | --- |
+| `Crafting` (`Ingredient`, `TechData`) | ✅ |
+| `Handlers.LanguageHandler` | ✅ |
+| `Utility.ImageUtils` | ✅ |
+| `Compat` (`Atlas.Sprite`) | ✅ |
+| `Assets` (`ModPrefab`, `Spawnable`, `Craftable`, `Buildable`) | ✅ |
+| `Handlers.CraftDataHandler`, `TechTypeHandler`, `OptionsPanelHandler` | pendente |
+| `Utility.ModUtils`, `AudioUtils` · `QModManager.API` | pendente |
+
+Cada tipo é escrito **depois** de conferir a assinatura contra a assembly real. Nada é
+deduzido de memória.
