@@ -64,33 +64,67 @@ não derruba os outros.
 
 ## 3.5 Resultado medido: Alterra Hub compilado contra a ponte
 
-Não é estimativa — foi compilado de verdade (232 arquivos do `FCS_AlterraHub` + o shared
-project `FCSCommon`, contra `Unhinged.Legacy` + `Subnautica.GameLibs` + Nautilus):
+Compilado de verdade — 225 arquivos do `FCS_AlterraHub` mais o shared project `FCSCommon`,
+contra `Unhinged.Legacy` + `Subnautica.GameLibs` + Nautilus 1.0.0-pre.53.
 
-| Etapa | Erros |
-| --- | ---: |
-| Primeira tentativa | **586** |
-| + `FCSCommon` (shared project) e `Newtonsoft.Json` | 216 |
-| + lacunas da ponte fechadas (Options, Commands, Json, bases corrigidas) | **68** |
+### ⚠️ Duas armadilhas de medição, ambas encontradas na prática
 
-➡️ **Nenhum dos 68 erros restantes menciona `SMLHelper` ou `QModManager`.** A ponte cobre
-integralmente a superfície legada deste módulo. O que sobra é de outra natureza:
+**1. Case-sensitivity engana.** O `.csproj` diz `Mono\`, o disco tem `mono/`. No Windows
+dá na mesma; no Linux, 27 arquivos "somem" e parece que a fonte publicada está incompleta.
+**Não está** — os 225 resolvem, com comparação case-insensitive. Uma conclusão errada aqui
+teria mandado o porte reimplementar um subsistema inteiro que já existe.
 
-| Restante | Quantidade | O que é |
+**2. Contagem de erro baixa pode ser o compilador desistindo.** Com um `CS0576` no
+`Mod.cs`, o total parecia **6**. Corrigido esse erro, o compilador foi adiante e o número
+real apareceu: **164**. Erro fatal cedo mascara o resto — comemorar contagem baixa sem
+antes eliminar os fatais é enganar a si mesmo.
+
+**3. Grepar pelo namespace não mede cobertura da ponte.** Nenhum dos 164 erros escreve
+"SMLHelper", mas vários nomes ausentes — `SpriteHandler`, `PDAHandler`,
+`OptionsPanelHandler`, `CustomSoundHandler`, `PingHandler`, `SaveUtils`, `QModServices` —
+**são** API legada que falta na ponte. O erro diz só o nome do tipo, não de onde ele vinha.
+
+### O estado real
+
+| Categoria | Erros | Natureza |
 | --- | ---: | --- |
-| `CS0579` AssemblyInfo duplicado | 12 | **artefato do experimento** (dois `AssemblyInfo.cs`); some num projeto real |
-| `CS0115`/`CS0535`/`CS0722` | 16 | **mudança de API do jogo** — nenhum shim absorve, exige editar a fonte |
-| `CS0246`/`CS0234` restantes | ~40 | tipos do **próprio FCS** (`FCSPDA`, `CartDropDownHandler`, `Order`…), de outros projetos do repo que o experimento não ligou |
+| Handlers legados ainda ausentes na ponte | ~26 | `SpriteHandler`, `PDAHandler`, `OptionsPanelHandler`, `CustomSoundHandler`, `PingHandler`, `SaveUtils`, `IIngredient`, `QModServices` |
+| API do jogo mudou | ~90 | `CraftData.GetItemSize`, `CraftData.techData`, `CraftData.cookedCreatureList` e outros membros removidos |
+| Unity/UI mudou | ~10 | `Text` → `TMPro.TextMeshProUGUI` |
+| Spawn passou para o Nautilus | ~16 | `CoordinatedSpawnsHandler`, `SpawnInfo` — existem no Nautilus, precisam do `using` certo |
+| Resto | ~22 | construtores, acessibilidade, conversões |
 
-As mudanças de API do jogo que apareceram, todas reais e todas exigindo edição na fonte:
-`CanDeconstruct` mudou de `out string` para `ref string`; `ITooltip` ganhou
-`GetTooltip(TooltipData)` e `showTooltipOnDrag`; `OnProtoSerialize`/`OnProtoDeserialize`
-mudaram de assinatura; e o alias de `TechData` descrito acima.
+➡️ **A ponte encurtou o trabalho, não o eliminou.** As bases de asset, crafting, idioma,
+áudio e o carregador funcionam; falta uma segunda leva de handlers, e há migração de API do
+jogo que **nenhum shim absorve** — é edição de fonte, arquivo a arquivo.
 
-Correções que este teste provocou na própria ponte — o valor de compilar em vez de supor:
-`GetItemSprite` precisava ser `protected` (16 classes do FCS o sobrescrevem assim, e
-`public` dava `CS0507`), e faltavam `UnlockedAtStart`, `EntityInfo` (`UWE.WorldEntityInfo`)
-e `DiscoverMessage` nas bases.
+### Regra de porte que este teste revelou
+
+**Onde o FCS tem `#if BELOWZERO`, o Subnautica moderno costuma precisar do ramo do Below
+Zero.** O `ITooltip` é o caso exemplar: o FCS já implementava `showTooltipOnDrag` e
+`GetTooltip(TooltipData)`, mas só sob `#if BELOWZERO` — porque o Subnautica de então tinha
+a API antiga. Os dois jogos convergiram. Antes de escrever implementação nova, **procure se
+o ramo BZ já a tem.**
+
+### Correção à orientação do §2
+
+O alias do `TechData` **precisa ficar dentro do `namespace`**, não no topo do arquivo:
+
+```csharp
+namespace MeuMod
+{
+    using TechData = SMLHelper.V2.Crafting.TechData;   // ✅ aqui
+```
+
+Em escopo de arquivo ele perde para o tipo global do jogo e dá **`CS0576`** — verificado
+compilando, depois de eu ter documentado errado a primeira vez.
+
+### Correções que o teste provocou na ponte
+
+`GetItemSprite` tinha de ser `protected` (16 classes do FCS o sobrescrevem assim);
+faltavam `UnlockedAtStart`, `EntityInfo` (`UWE.WorldEntityInfo`) e `DiscoverMessage` nas
+bases; e faltava a propriedade **`Order`** nos atributos de opções — usada pelo FCS para
+ordenar o painel, e invisível em qualquer leitura que não fosse compilar.
 
 ## 4. O que a ponte ainda não cobre
 

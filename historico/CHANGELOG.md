@@ -154,3 +154,25 @@
 - `32Kallies/Socknautica` (link do operador) é **o mesmo repositório** que
   `LeeTwentyThree/Socknautica` — 197 arquivos idênticos, mesmo commit de 24/04/2024, e
   **também sem licença**. O bloqueio do S.O.C.K. Tank permanece.
+
+### Corrigido (medição anterior estava errada)
+- O número "68 erros / nenhum menciona SMLHelper" que registrei antes **não era o estado
+  real**. Três armadilhas, todas encontradas compilando:
+  1. **Case-sensitivity**: o `.csproj` diz `Mono\`, o disco tem `mono/`. No Linux 27
+     arquivos "somem" e parece fonte incompleta — **não é**. Os 225 resolvem.
+  2. **Erro fatal mascara o resto**: com um `CS0576` no `Mod.cs` o total parecia 6;
+     corrigido, o compilador foi adiante e o real apareceu: **164**.
+  3. **Grep por namespace não mede cobertura**: nenhum erro escreve "SMLHelper", mas
+     `SpriteHandler`, `PDAHandler`, `OptionsPanelHandler`, `CustomSoundHandler`,
+     `PingHandler`, `SaveUtils` e `QModServices` **são** API legada faltando na ponte.
+- Consequência: a ponte **encurta** o porte, não o elimina. Faltam ~26 erros de handlers
+  legados e ~90 de migração de API do jogo, que nenhum shim absorve.
+- Também corrigida a orientação do guia: o alias `using TechData = ...` **precisa ficar
+  dentro do `namespace`**; em escopo de arquivo perde para o tipo global e dá `CS0576`.
+
+### Adicionado
+- Propriedade `Order` nos atributos de opções — o FCS a usa para ordenar o painel, e ela
+  só apareceu compilando.
+- Regra de porte descoberta: **onde o FCS tem `#if BELOWZERO`, o Subnautica moderno
+  costuma precisar do ramo do Below Zero** — os dois jogos convergiram. O `ITooltip` é o
+  caso exemplar: a implementação certa já estava lá, desativada por `#if`.

@@ -92,9 +92,15 @@ A superfície necessária foi medida nas 20 classes do FCS que herdam dessas bas
 | `Utility.ModUtils` (save data — exige verificação própria) | pendente |
 | `SpriteHandler`, `KnownTechHandler`, `CraftTreeHandler`, `PDAHandler` | pendente |
 
-**Validado compilando de verdade:** o `FCS_AlterraHub` (232 arquivos) foi de **586 erros
-para 68** contra esta ponte, e **nenhum dos 68 menciona SMLHelper ou QModManager**.
-Detalhe em [`docs/PORTE-LEGADO.md`](../../docs/PORTE-LEGADO.md).
+**Validado compilando de verdade** — e o resultado corrigiu duas conclusões minhas.
+O `FCS_AlterraHub` (225 arquivos) compila contra esta ponte com **164 erros restantes**,
+dos quais ~26 são handlers legados ainda ausentes aqui (`SpriteHandler`, `PDAHandler`,
+`OptionsPanelHandler`, `CustomSoundHandler`, `PingHandler`, `SaveUtils`, `QModServices`) e
+o resto é migração de API do jogo/Unity, que nenhum shim absorve.
+
+Uma contagem menor que apareceu antes (**6**) era o compilador **abortando cedo** num
+`CS0576`; e um grep por "SMLHelper" nos erros **não mede cobertura**, porque o compilador
+reporta só o nome do tipo. Detalhe em [`docs/PORTE-LEGADO.md`](../../docs/PORTE-LEGADO.md).
 
 Cada tipo é escrito **depois** de conferir a assinatura contra a assembly real. Nada é
 deduzido de memória.

@@ -21,6 +21,9 @@ namespace SMLHelper.V2.Options.Attributes
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public sealed class ToggleAttribute : Attribute
     {
+        /// <summary>Posição no painel de opções.</summary>
+        public int Order { get; set; }
+
         public string Label { get; set; }
         public string Tooltip { get; set; }
         public ToggleAttribute() { }
@@ -30,6 +33,9 @@ namespace SMLHelper.V2.Options.Attributes
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public sealed class SliderAttribute : Attribute
     {
+        /// <summary>Posição no painel de opções.</summary>
+        public int Order { get; set; }
+
         public string Label { get; set; }
         public string Tooltip { get; set; }
         public float Min { get; set; }
@@ -45,6 +51,9 @@ namespace SMLHelper.V2.Options.Attributes
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public sealed class ChoiceAttribute : Attribute
     {
+        /// <summary>Posição no painel de opções.</summary>
+        public int Order { get; set; }
+
         public string Label { get; set; }
         public string Tooltip { get; set; }
         public string[] Options { get; set; }
@@ -56,6 +65,9 @@ namespace SMLHelper.V2.Options.Attributes
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public sealed class KeybindAttribute : Attribute
     {
+        /// <summary>Posição no painel de opções.</summary>
+        public int Order { get; set; }
+
         public string Label { get; set; }
         public string Tooltip { get; set; }
         public KeybindAttribute() { }
@@ -65,6 +77,9 @@ namespace SMLHelper.V2.Options.Attributes
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class ButtonAttribute : Attribute
     {
+        /// <summary>Posição no painel de opções.</summary>
+        public int Order { get; set; }
+
         public string Label { get; set; }
         public string Tooltip { get; set; }
         public ButtonAttribute() { }
