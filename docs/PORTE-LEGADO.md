@@ -159,24 +159,50 @@ public static class HandReticleLegacyExtensions
   `TechData.GetItemSize` (mesma assinatura, devolve `Vector2int`). Não dá para estender uma
   chamada estática: é `sed` de `CraftData.GetItemSize` → `TechData.GetItemSize`.
 
-## 3.6 Estado atual: a ponte terminou; falta migrar a API do jogo
+## 3.6 Progressão medida do Alterra Hub
 
-Depois da segunda leva de handlers (`SpriteHandler`, `PDAHandler`, `CustomSoundHandler`,
-`PingHandler`, `SaveUtils`, `OptionsPanelHandler`, `QModServices`), o Alterra Hub está em
-**152 erros — e nenhum deles é da ponte.** Todos são API do jogo que mudou:
+| Passo | Erros |
+| --- | ---: |
+| Primeira tentativa | **586** |
+| `FCSCommon` (shared project) + `Newtonsoft.Json` | 216 |
+| Primeira leva da ponte (Options, Commands, Json, bases) | 152 |
+| Segunda leva (Sprite/PDA/Sound/Ping/SaveUtils/Options/QModServices) | 152 |
+| **`HandReticle` por extensão global** | **106** |
+| `EndCreditsManager` portado para Postfix + seds | 70 |
+| `CoordinatedSpawnsHandler` + `ConsoleCommandsHandler` | **60** |
 
-| Tipo do jogo | Erros | Migração |
-| --- | ---: | --- |
-| ~~`HandReticle`~~ | ~~48~~ → **0** | ✅ **resolvido pela ponte** (extensão em namespace global — ver §3.55) |
-| `EndCreditsManager` | ~20 | créditos finais reescritos; campos (`centerText`, `leftText`, `goToPos`…) não existem mais |
-| **`CraftData.GetItemSize`** | 10 | → **`TechData.GetItemSize(TechType)`**, mesma assinatura (`Vector2int`). Chamada estática: exige `sed` na fonte, a ponte não alcança |
-| `PDA.screen`, `Player.pdaSpawn` | 10 | campos removidos |
-| `PDAEncyclopedia.EntryData.timeCapsule` | 4 | campo removido |
-| `InputField.SetText` | 2 | Unity UI |
-| resto | ~58 | construtores, acessibilidade, conversões, `Text`→`TextMeshProUGUI` |
+### Os 60 restantes: campos que o jogo removeu
 
-➡️ **`HandReticle` sozinho é um terço.** Migrá-lo é o passo de maior retorno, e é mecânico:
-três métodos viraram dois, com o destino do texto passando a ser um parâmetro `TextType`.
+Nenhum é da ponte. São membros que **deixaram de existir** e cuja substituição não é
+mecânica — exigem entender o que o código pretendia:
+
+| Removido | Erros |
+| --- | ---: |
+| `PDA.screen` | 6 |
+| `Player.pdaSpawn` | 4 |
+| `PDAEncyclopedia.EntryData.timeCapsule` | 4 |
+| `CraftData.techData` / `CraftData.cookedCreatureList` | 4 |
+| `InputField.SetText` (Unity UI) | 2 |
+| construtores, acessibilidade, conversões | ~40 |
+
+`CraftData.techData` e `cookedCreatureList` eram a base de receitas do vanilla, que o FCS
+lia direto. **Não existem em lugar nenhum do jogo atual** — procurei em `CraftData`,
+`TechData` e `CraftDataUtils`. Ler a receita vanilla agora passa pelo Nautilus
+(`CraftDataHandler.GetRecipeData`), o que muda o desenho daquele código, não só o nome.
+
+### ⚠️ Uma decisão de porte que muda comportamento
+
+O patch do `EndCreditsManager` era um **Prefix que substituía o `Start` inteiro** e
+reimplementava o andaime dos créditos. Nada daquele andaime existe hoje.
+
+Mas o mod nunca precisou dele: o comportamento próprio do FCS é só o final da dívida com a
+Alterra. Portado como **Postfix**, o vanilla roda os créditos e o patch apenas acrescenta o
+que é do mod — menos código, nenhum campo removido, sem disputar a implementação do jogo.
+
+**Precisa da sua revisão:** o atraso vinha de `secondsUntilScrollComplete`, que sumiu, e a
+duração equivalente **não é derivável** dos campos novos (`scrollSpeed`/`scrollStep`/
+`fadeCurve`) sem conhecer a nova matemática do scroll. Deixei um valor explícito e
+nomeado no lugar de uma fórmula inventada — é para ser ajustado testando em jogo.
 
 ## 4. O que a ponte ainda não cobre
 

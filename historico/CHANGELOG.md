@@ -216,3 +216,22 @@
   `TechData.GetItemSize(TechType)`, mesma assinatura. Também fora do alcance da ponte.
 - O dumper de metadata ganhou resolução de tipo aninhado; foi assim que `GameInput.Button`
   e `HandReticle.TextType` saíram de suposição para verificação.
+
+### Adicionado
+- `CoordinatedSpawnsHandler` e `ConsoleCommandsHandler` no shim (o `SpawnInfo` passou a
+  viver em `Nautilus.Handlers`; o `SpawnLocation`, em `Nautilus.Assets`).
+
+### Portado (decisão que muda comportamento — precisa de revisão)
+- O patch do `EndCreditsManager` era um Prefix que substituía o `Start` inteiro e
+  reimplementava o andaime dos créditos, que o jogo moderno reescreveu por completo. Mas o
+  mod nunca precisou daquele andaime: o comportamento próprio do FCS é só o final da
+  dívida com a Alterra. Virou **Postfix** — o vanilla roda os créditos, o patch só
+  acrescenta o que é do mod.
+- ⚠️ O atraso vinha de `secondsUntilScrollComplete`, que sumiu, e não é derivável dos
+  campos novos sem conhecer a nova matemática do scroll. Ficou um valor explícito e
+  nomeado, para ser ajustado testando em jogo — em vez de uma fórmula inventada.
+
+### Resultado
+- **Alterra Hub: 586 → 60 erros.** Nenhum dos 60 é da ponte: são membros removidos do jogo
+  (`PDA.screen`, `Player.pdaSpawn`, `EntryData.timeCapsule`, `CraftData.techData`,
+  `cookedCreatureList`) cuja substituição exige entender a intenção do código, não renomear.

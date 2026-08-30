@@ -93,15 +93,15 @@ A superfície necessária foi medida nas 20 classes do FCS que herdam dessas bas
 | `Utility.SaveUtils` | ✅ |
 | `QModManager.API.QModServices` (sobre o `Chainloader`) | ✅ |
 | `GameCompat/HandReticleCompat` (API antiga do jogo, via extensão global) | ✅ |
+| `CoordinatedSpawnsHandler`, `ConsoleCommandsHandler` | ✅ |
 | `Json.ConfigFile` | ✅ |
 | `Utility.ModUtils` (save data — exige verificação própria) | pendente |
 | `SpriteHandler`, `KnownTechHandler`, `CraftTreeHandler`, `PDAHandler` | pendente |
 
 **Validado compilando de verdade** — e o resultado corrigiu duas conclusões minhas.
-O `FCS_AlterraHub` (225 arquivos) compila contra esta ponte com **164 erros restantes**,
-dos quais ~26 são handlers legados ainda ausentes aqui (`SpriteHandler`, `PDAHandler`,
-`OptionsPanelHandler`, `CustomSoundHandler`, `PingHandler`, `SaveUtils`, `QModServices`) e
-o resto é migração de API do jogo/Unity, que nenhum shim absorve.
+O `FCS_AlterraHub` (225 arquivos) saiu de **586 para 60 erros** contra esta ponte, e
+**nenhum dos 60 é da ponte** — são membros que o jogo removeu (`PDA.screen`,
+`Player.pdaSpawn`, `CraftData.techData`…), que exigem retrabalho na fonte.
 
 Uma contagem menor que apareceu antes (**6**) era o compilador **abortando cedo** num
 `CS0576`; e um grep por "SMLHelper" nos erros **não mede cobertura**, porque o compilador
