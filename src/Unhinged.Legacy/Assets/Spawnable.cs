@@ -19,8 +19,8 @@ namespace SMLHelper.V2.Assets
         private readonly string _friendlyName;
         private readonly string _description;
 
-        internal override string FriendlyName => _friendlyName;
-        internal override string Description => _description;
+        public override string FriendlyName => _friendlyName;
+        public override string Description => _description;
 
         /// <summary>Nome do arquivo de ícone dentro de <see cref="ModPrefab.AssetsFolder"/>.</summary>
         public virtual string IconFileName => $"{ClassID}.png";

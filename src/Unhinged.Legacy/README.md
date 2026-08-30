@@ -99,9 +99,10 @@ A superfície necessária foi medida nas 20 classes do FCS que herdam dessas bas
 | `SpriteHandler`, `KnownTechHandler`, `CraftTreeHandler`, `PDAHandler` | pendente |
 
 **Validado compilando de verdade** — e o resultado corrigiu duas conclusões minhas.
-O `FCS_AlterraHub` (225 arquivos) saiu de **586 para 60 erros** contra esta ponte, e
-**nenhum dos 60 é da ponte** — são membros que o jogo removeu (`PDA.screen`,
-`Player.pdaSpawn`, `CraftData.techData`…), que exigem retrabalho na fonte.
+O `FCS_AlterraHub` (225 arquivos) saiu de **586 para 30 erros** contra esta ponte, e
+**nenhum dos 30 é da ponte** — são 12 problemas em 9 arquivos, todos membros que o jogo ou
+a Unity removeram (`PDA.screen`, `Player.pdaSpawn`, `CraftData.techData`, `Text` →
+`TextMeshProUGUI`), que exigem retrabalho e não sed.
 
 Uma contagem menor que apareceu antes (**6**) era o compilador **abortando cedo** num
 `CS0576`; e um grep por "SMLHelper" nos erros **não mede cobertura**, porque o compilador

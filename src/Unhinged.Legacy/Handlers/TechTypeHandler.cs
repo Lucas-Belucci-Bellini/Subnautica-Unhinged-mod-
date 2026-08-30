@@ -42,6 +42,9 @@ namespace SMLHelper.V2.Handlers
             public TechType AddTechType(string internalName, string displayName, string tooltip)
                 => TechTypeHandler.AddTechType(internalName, displayName, tooltip);
 
+            public TechType AddTechType(string internalName, string displayName, string tooltip, bool unlockAtStart)
+                => TechTypeHandler.AddTechType(internalName, displayName, tooltip, unlockAtStart);
+
             public bool TryGetModdedTechType(string internalName, out TechType techType)
                 => TechTypeHandler.TryGetModdedTechType(internalName, out techType);
 
@@ -53,6 +56,7 @@ namespace SMLHelper.V2.Handlers
     public interface ITechTypeHandler
     {
         TechType AddTechType(string internalName, string displayName, string tooltip);
+        TechType AddTechType(string internalName, string displayName, string tooltip, bool unlockAtStart);
         bool TryGetModdedTechType(string internalName, out TechType techType);
         bool ModdedTechTypeExists(string internalName);
     }

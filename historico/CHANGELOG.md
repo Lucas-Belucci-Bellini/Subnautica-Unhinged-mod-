@@ -235,3 +235,22 @@
 - **Alterra Hub: 586 → 60 erros.** Nenhum dos 60 é da ponte: são membros removidos do jogo
   (`PDA.screen`, `Player.pdaSpawn`, `EntryData.timeCapsule`, `CraftData.techData`,
   `cookedCreatureList`) cuja substituição exige entender a intenção do código, não renomear.
+
+### Corrigido (lacunas da ponte, achadas compilando)
+- `FriendlyName`/`Description` eram `internal` e o código legado os lê de fora (`CS0122`).
+- `Json.ConfigFile` ganhou o construtor `(fileName, subfolder)` do SMLHelper.
+- `OptionsPanelHandler.RegisterModOptions<T>()` genérico; `ITechTypeHandler.AddTechType`
+  com 4 argumentos; `ICustomSoundHandler.RegisterCustomSound` sem bus explícito.
+- `IIngredient`, que o SMLHelper expunha e o jogo moderno não tem.
+
+### Registrado (armadilha do padrão de reexportação)
+- `using Nautilus.Handlers;` num arquivo legado gera **`CS0104`**: o shim reexporta
+  `CoordinatedSpawnsHandler` com o mesmo nome, e os dois namespaces empatam. A regra é
+  **alias do tipo** (`using SpawnInfo = Nautilus.Handlers.SpawnInfo;`), nunca `using` do
+  namespace. Vale para a maioria dos handlers, por construção.
+- `SpawnInfo` exige alias porque é **`sealed`** no Nautilus — não dá para reexportá-lo por
+  herança como foi feito com `ConfigFile` e `ModOptions`.
+
+### Resultado
+- **Alterra Hub: 586 → 30 erros.** Os 30 são 12 problemas em 9 arquivos, todos membros
+  removidos pelo jogo ou pela Unity, e nenhum deles mecânico.

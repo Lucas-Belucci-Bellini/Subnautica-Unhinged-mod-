@@ -166,43 +166,52 @@ public static class HandReticleLegacyExtensions
 | Primeira tentativa | **586** |
 | `FCSCommon` (shared project) + `Newtonsoft.Json` | 216 |
 | Primeira leva da ponte (Options, Commands, Json, bases) | 152 |
-| Segunda leva (Sprite/PDA/Sound/Ping/SaveUtils/Options/QModServices) | 152 |
-| **`HandReticle` por extensão global** | **106** |
-| `EndCreditsManager` portado para Postfix + seds | 70 |
-| `CoordinatedSpawnsHandler` + `ConsoleCommandsHandler` | **60** |
+| `HandReticle` por extensão em namespace global | 106 |
+| `EndCreditsManager` → Postfix + seds | 70 |
+| `CoordinatedSpawnsHandler` + `ConsoleCommandsHandler` | 60 |
+| Acessibilidade, ctors e sobrecargas que faltavam na ponte | 44 |
+| `SpawnInfo`, `Ocean.GetDepthOf`, `Subtitles.Add` (seds) | **30** |
 
-### Os 60 restantes: campos que o jogo removeu
+### ⚠️ Armadilha do padrão de reexportação: `CS0104`
 
-Nenhum é da ponte. São membros que **deixaram de existir** e cuja substituição não é
-mecânica — exigem entender o que o código pretendia:
+Ao adicionar `using Nautilus.Handlers;` num arquivo legado para achar o `SpawnInfo`,
+o build passou a acusar **ambiguidade**: o shim reexporta `CoordinatedSpawnsHandler`
+com o mesmo nome do Nautilus, e os dois namespaces importados juntos empatam.
 
-| Removido | Erros |
-| --- | ---: |
-| `PDA.screen` | 6 |
-| `Player.pdaSpawn` | 4 |
-| `PDAEncyclopedia.EntryData.timeCapsule` | 4 |
-| `CraftData.techData` / `CraftData.cookedCreatureList` | 4 |
-| `InputField.SetText` (Unity UI) | 2 |
-| construtores, acessibilidade, conversões | ~40 |
+**Regra:** para alcançar um tipo do Nautilus a partir de código legado, use **alias do
+tipo**, nunca `using` do namespace inteiro:
 
-`CraftData.techData` e `cookedCreatureList` eram a base de receitas do vanilla, que o FCS
-lia direto. **Não existem em lugar nenhum do jogo atual** — procurei em `CraftData`,
-`TechData` e `CraftDataUtils`. Ler a receita vanilla agora passa pelo Nautilus
-(`CraftDataHandler.GetRecipeData`), o que muda o desenho daquele código, não só o nome.
+```csharp
+using SpawnInfo = Nautilus.Handlers.SpawnInfo;   // ✅
+using Nautilus.Handlers;                          // ⛔ CS0104 com o shim
+```
 
-### ⚠️ Uma decisão de porte que muda comportamento
+Isso vale sempre que o shim e o Nautilus expõem o mesmo nome — que é a maioria dos
+handlers, por construção.
 
-O patch do `EndCreditsManager` era um **Prefix que substituía o `Start` inteiro** e
-reimplementava o andaime dos créditos. Nada daquele andaime existe hoje.
+`SpawnInfo` precisa de alias porque é **`sealed`** no Nautilus: não dá para reexportá-lo
+por herança como foi feito com `ConfigFile` e `ModOptions`.
 
-Mas o mod nunca precisou dele: o comportamento próprio do FCS é só o final da dívida com a
-Alterra. Portado como **Postfix**, o vanilla roda os créditos e o patch apenas acrescenta o
-que é do mod — menos código, nenhum campo removido, sem disputar a implementação do jogo.
+### Os 30 restantes: 12 problemas em 9 arquivos
 
-**Precisa da sua revisão:** o atraso vinha de `secondsUntilScrollComplete`, que sumiu, e a
-duração equivalente **não é derivável** dos campos novos (`scrollSpeed`/`scrollStep`/
-`fadeCurve`) sem conhecer a nova matemática do scroll. Deixei um valor explícito e
-nomeado no lugar de uma fórmula inventada — é para ser ajustado testando em jogo.
+Nenhum é da ponte. São membros removidos ou trocados pelo jogo/Unity, e **nenhum é
+mecânico** — cada um exige entender o que o código pretendia:
+
+| Arquivo | Problema |
+| --- | --- |
+| `WorldHelpers.cs` | `CraftData.techData` e o tipo `CraftData.TechData` sumiram |
+| `BaseManager.cs` | `CraftData.cookedCreatureList` sumiu |
+| `FCSPDAController.cs` | `PDA.screen` sumiu |
+| `PlayerPatch.cs` | `Player.pdaSpawn` sumiu; e um argumento virou `Transform` |
+| `EncyclopediaTabController.cs`, `FCSAlterraHubService.cs` | `EntryData.timeCapsule` sumiu |
+| `AlterraHubModelPrefab.cs` | `Text` → `TMPro.TextMeshProUGUI` |
+| `FCSGrowingPlant.cs` | prefab virou `AssetReferenceGameObject` (Addressables) |
+| `SearchField.cs` | `InputField.SetText` sumiu |
+| `PowercellSlot.cs` | argumento virou `GameInput.Button` |
+
+Os dois do `CraftData` são os mais profundos: eram a base de receitas do vanilla lida
+direto. Não existem em `CraftData`, `TechData` nem `CraftDataUtils` — ler receita vanilla
+agora passa pelo Nautilus, o que muda o **desenho** daquele código, não o nome.
 
 ## 4. O que a ponte ainda não cobre
 

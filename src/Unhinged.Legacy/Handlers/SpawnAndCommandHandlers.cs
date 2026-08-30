@@ -51,3 +51,16 @@ namespace SMLHelper.V2.Handlers
         void RegisterConsoleCommands(Type type);
     }
 }
+
+namespace SMLHelper.V2.Handlers
+{
+    /// <summary>
+    /// Interface de ingrediente que o SMLHelper V2 expunha. O jogo moderno usa a classe
+    /// concreta <c>Ingredient</c>; a interface some, mas código legado ainda a declara.
+    /// </summary>
+    public interface IIngredient
+    {
+        TechType techType { get; }
+        int amount { get; }
+    }
+}

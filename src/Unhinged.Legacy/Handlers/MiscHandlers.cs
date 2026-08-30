@@ -48,12 +48,18 @@ namespace SMLHelper.V2.Handlers
         {
             public FMOD.Sound RegisterCustomSound(string id, string filePath, string busPath)
                 => CustomSoundHandler.RegisterCustomSound(id, filePath, busPath);
+
+            public FMOD.Sound RegisterCustomSound(string id, string filePath)
+                => CustomSoundHandler.RegisterCustomSound(id, filePath, "bus:/master");
         }
     }
 
     public interface ICustomSoundHandler
     {
         FMOD.Sound RegisterCustomSound(string id, string filePath, string busPath);
+
+        /// <summary>Sem bus explícito: cai no bus raiz, como o SMLHelper fazia.</summary>
+        FMOD.Sound RegisterCustomSound(string id, string filePath);
     }
 
     /// <summary>

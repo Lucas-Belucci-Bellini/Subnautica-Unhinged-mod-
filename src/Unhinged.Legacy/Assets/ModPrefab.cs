@@ -97,8 +97,12 @@ namespace SMLHelper.V2.Assets
         /// </summary>
         protected virtual Atlas.Sprite GetItemSprite() => null;
 
-        internal virtual string FriendlyName => ClassID;
+        /// <summary>
+        /// Público, não interno: o código legado lê estes dois de fora da hierarquia
+        /// (o FCS faz isso em 2 lugares), e `internal` dava CS0122.
+        /// </summary>
+        public virtual string FriendlyName => ClassID;
 
-        internal virtual string Description => string.Empty;
+        public virtual string Description => string.Empty;
     }
 }

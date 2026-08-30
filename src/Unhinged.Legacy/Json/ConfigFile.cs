@@ -9,5 +9,12 @@ namespace SMLHelper.V2.Json
     /// </summary>
     public abstract class ConfigFile : Nautilus.Json.ConfigFile
     {
+        protected ConfigFile() { }
+
+        /// <summary>
+        /// Nome do arquivo e subpasta, como o SMLHelper expunha. O construtor
+        /// equivalente do Nautilus não é público, mas é acessível à classe derivada.
+        /// </summary>
+        protected ConfigFile(string fileName, string subfolder) : base(fileName, subfolder) { }
     }
 }

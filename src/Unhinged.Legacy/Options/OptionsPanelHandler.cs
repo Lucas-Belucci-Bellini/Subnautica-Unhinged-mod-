@@ -27,15 +27,23 @@ namespace SMLHelper.V2.Handlers
         public static void RegisterModOptions(Nautilus.Options.ModOptions options)
             => Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions(options);
 
+        /// <summary>Forma genérica: o Nautilus constrói e registra a instância.</summary>
+        public static T RegisterModOptions<T>() where T : Nautilus.Json.ConfigFile, new()
+            => Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions<T>();
+
         private sealed class MainShim : IOptionsPanelHandler
         {
             public void RegisterModOptions(Nautilus.Options.ModOptions options)
                 => OptionsPanelHandler.RegisterModOptions(options);
+
+            public T RegisterModOptions<T>() where T : Nautilus.Json.ConfigFile, new()
+                => OptionsPanelHandler.RegisterModOptions<T>();
         }
     }
 
     public interface IOptionsPanelHandler
     {
         void RegisterModOptions(Nautilus.Options.ModOptions options);
+        T RegisterModOptions<T>() where T : Nautilus.Json.ConfigFile, new();
     }
 }
