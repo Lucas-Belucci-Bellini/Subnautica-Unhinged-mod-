@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using FCS_AlterraHub.Buildables;
 using FCS_AlterraHub.Helpers;
@@ -231,7 +231,7 @@ namespace FCS_HomeSolutions.Mods.PeeperLoungeBar.Mono
                 AudioTrack.setPaused(WorldHelpers.CheckIfPaused());
             }
 
-            if (WorldHelpers.CheckIfInRange(Player.main.gameObject, gameObject, 5) && !uGUI.isLoading)
+            if (WorldHelpers.CheckIfInRange(Player.main.gameObject, gameObject, 5) && !WaitScreen.IsWaiting)
             {
                 _sc.enabled = false;
                 Vector3 eulerAngles = Quaternion
@@ -316,11 +316,8 @@ namespace FCS_HomeSolutions.Mods.PeeperLoungeBar.Mono
             if (!isPlaying)
             {
                 var clip = FindAudioClip(trackName);
-                Subtitles
-#if SUBNAUTICA
-                    .main
-#endif
-                    .Add(clip.Message, null);
+                // PORTE — `Subtitles.Add` virou estatico; chamar por `.main` da CS0176.
+                Subtitles.Add(clip.Message, null);
                 AudioTrack = AudioUtils.PlaySound(clip.Sound, SoundChannel.Master);
             }
         }
@@ -339,7 +336,7 @@ namespace FCS_HomeSolutions.Mods.PeeperLoungeBar.Mono
 
                     IsInitialized = true;
 
-                    if (!_introHasBeenPlayed && !uGUI.isLoading)
+                    if (!_introHasBeenPlayed && !WaitScreen.IsWaiting)
                     {
                         if (!FCSAlterraHubService.PublicAPI.GetGamePlaySettings().ConditionMet("PLBIntroPlayed"))
                         {

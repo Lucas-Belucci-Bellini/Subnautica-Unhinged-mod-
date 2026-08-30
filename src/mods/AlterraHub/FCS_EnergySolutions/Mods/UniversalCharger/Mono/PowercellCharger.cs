@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using FCS_AlterraHub.Helpers;
 using FCS_EnergySolutions.Mods.PowerStorage.Enums;
 using FCSCommon.Utilities;
 using UnityEngine;
+// PORTE — o jogo migrou a UI de `UnityEngine.UI.Text` para TextMeshPro, entao os
+// campos que recebem estes componentes agora sao `TMPro.TextMeshProUGUI` e os
+// prefabs carregam o componente TMP. Buscar o `Text` legado devolveria nulo mesmo
+// que compilasse.
+using TMPro;
 using UnityEngine.UI;
 
 #if BELOWZERO
@@ -40,7 +45,7 @@ namespace FCS_EnergySolutions.Mods.UniversalCharger.Mono
             this.ui = _mono.GetUI();
             this.uiPowered = GameObjectHelpers.FindGameObject(_mono.gameObject, "Powered");
             this.uiUnpowered = GameObjectHelpers.FindGameObject(_mono.gameObject, "UnPowered");
-            this.uiUnpoweredText = uiUnpowered.GetComponentInChildren<Text>();
+            this.uiUnpoweredText = uiUnpowered.GetComponentInChildren<TextMeshProUGUI>();
             
             if (this.slotDefinitions == null)
             {
@@ -81,7 +86,7 @@ namespace FCS_EnergySolutions.Mods.UniversalCharger.Mono
                 {
                     id = slotName,
                     bar = _uiBatteries[index].FindChild("BatteryFill").GetComponent<Image>(),
-                    text = _uiBatteries[index].GetComponentInChildren<Text>()
+                    text = _uiBatteries[index].GetComponentInChildren<TextMeshProUGUI>()
                 });
             }
 

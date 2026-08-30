@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -147,7 +147,7 @@ namespace FCS_AlterraHub.Patches
         private static IEnumerator CreateFcsPda(Player player)
         {
 #if SUBNAUTICA
-            yield return new WaitUntil(() => player.pdaSpawn.spawnedObj != null);
+            yield return new WaitUntil(() => player.pda.prefabScreen != null);
 #else
             yield return new WaitUntil(() => player.pda.prefabScreen != null);
 #endif
@@ -155,7 +155,7 @@ namespace FCS_AlterraHub.Patches
             QuickLogger.Debug("Creating FCS PDA");
 
 #if SUBNAUTICA
-            defPDA = player.pdaSpawn.spawnedObj;
+            defPDA = player.pda.prefabScreen;
 #else
             defPDA = player.pda.prefabScreen;
 #endif

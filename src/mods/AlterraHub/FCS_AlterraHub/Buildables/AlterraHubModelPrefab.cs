@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using FCS_AlterraHub.API;
 using FCS_AlterraHub.Configuration;
@@ -6,6 +6,11 @@ using FCS_AlterraHub.Extensions;
 using FCS_AlterraHub.Helpers;
 using FCSCommon.Utilities;
 using UnityEngine;
+// PORTE — o jogo migrou a UI de `UnityEngine.UI.Text` para TextMeshPro, entao os
+// campos que recebem estes componentes agora sao `TMPro.TextMeshProUGUI` e os
+// prefabs carregam o componente TMP. Buscar o `Text` legado devolveria nulo mesmo
+// que compilasse.
+using TMPro;
 using UnityEngine.UI;
 
 namespace FCS_AlterraHub.Buildables
@@ -237,7 +242,7 @@ namespace FCS_AlterraHub.Buildables
             var listEntry = encyclopediaEntryPrefab.AddComponent<uGUI_ListEntry>();
             listEntry.layoutElement = encyclopediaEntryPrefab.FindChild("ImageContainer").GetComponentInChildren<LayoutElement>();
 #if SUBNAUTICA
-            listEntry.text = encyclopediaEntryPrefab.GetComponentInChildren<Text>();
+            listEntry.text = encyclopediaEntryPrefab.GetComponentInChildren<TextMeshProUGUI>();
 #endif
             listEntry.icon = encyclopediaEntryPrefab.FindChild("ImageContainer").FindChild("Arrow").GetComponent<Image>();
             listEntry.background = encyclopediaEntryPrefab.GetComponent<Image>();
