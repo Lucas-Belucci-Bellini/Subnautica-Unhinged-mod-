@@ -213,13 +213,102 @@ Os dois do `CraftData` são os mais profundos: eram a base de receitas do vanill
 direto. Não existem em `CraftData`, `TechData` nem `CraftDataUtils` — ler receita vanilla
 agora passa pelo Nautilus, o que muda o **desenho** daquele código, não o nome.
 
+## 3.7 Medição da suíte FCS inteira: 81 erros em 47 dos 636 arquivos
+
+Os sete módulos FCS compilados **juntos**, contra a ponte, com o `Subnautica.GameLibs`
+82304 e o Nautilus 1.0.0-pre.53. É a resposta para "quanto falta".
+
+| | |
+| --- | --- |
+| arquivos compilados | **636** (a lista vem dos `.csproj` dos autores) |
+| arquivos com erro | **47** (7,4%) |
+| erros únicos | **81** |
+| sintomas distintos | **33** |
+
+### ⚠️ Três armadilhas de medição, todas encontradas neste teste
+
+Antes destes números eu produzi 16, depois 10, depois 3 — **os três estavam errados**,
+cada um por um motivo diferente. Vale mais registrar os motivos do que os números.
+
+1. **Mascaramento por fase.** `CS0246`/`CS0115` são erros de **declaração**; o Roslyn
+   aborta antes de ligar corpos de método, e todo erro tipo `CS1061` some do relatório.
+   Um número baixo enquanto ainda houver erro de declaração **não quer dizer nada**.
+   Foi assim que 3 erros viraram 81 ao completar um stub de três membros.
+2. **Corpus incompleto.** Minha lista de compilação vinha dos `.csproj` dos autores, mas
+   com casamento de caminho sensível a maiúsculas: o `.csproj` diz `Mono\`, o disco tem
+   `mono/`. No Windows deles dá na mesma; aqui, 21 arquivos sumiram em silêncio — entre
+   eles os dois que este mesmo teste deveria exercitar. **Compare sempre a contagem de
+   `<Compile>` com a do disco.**
+3. **Código morto no repositório.** Outros 13 arquivos existem no disco mas **não estão
+   em nenhum `.csproj` dos autores** (`FCS_AlterraHub/Mono/AlterraHub/*`, os
+   `Mods/Stairs/Patchers/*`). São fonte antiga que eles deixaram na árvore. Incluí-los
+   inventa 23 erros que não existem. **A lista de compilação é a dos autores, não a do
+   `find`.**
+
+Os `AssemblyInfo.cs` continuam fora: sete módulos viram **um** assembly nesta medição, e
+os atributos duplicados dão `CS0579`. Isso é artefato da medição, não do porte.
+
+Dois stubs de medição (`MoreCyclopsUpgrades`, `NAudio`) vivem só no scratchpad e **nunca
+entram no repositório** — existem para o compilador passar da fase de declaração.
+
+### Os 81, em três baldes
+
+| balde | erros | o que é |
+| --- | --- | --- |
+| **A. Mecânico** | ~38 | Uma linha na ponte, ou uma troca de nome de chamada, resolve vários sítios de uma vez. Sem decisão de projeto. |
+| **B. A API sumiu do jogo** | ~29 | O símbolo **não existe mais** no `Assembly-CSharp` — não migrou, foi apagado. Precisa de um caminho novo, e isso é decisão de comportamento. |
+| **C. O jogo trocou de tecnologia** | ~13 | `UnityEngine.UI.Text` → `TMPro.TextMeshProUGUI`, e prefab direto → `Addressables`. Edição sítio a sítio. |
+
+#### Balde A — mecânico
+
+| sintoma | sítios | conserto |
+| --- | --- | --- |
+| `TechData.GetItemSize` | 5 | O alias `using TechData = SMLHelper...` esconde o `TechData` **estático global** do jogo, que é onde o método passou a morar. Somar os estáticos à classe da ponte, encaminhando, resolve os dois sentidos no mesmo arquivo. |
+| `CraftData.GetItemSize` / `GetEquipmentType` / `GetCraftTime` / `craftingTimes` | 10 | Migraram do `CraftData` para o `TechData` global. Troca de nome de chamada. |
+| `CraftData.techData` / `CraftData.TechData` | 4 | Idem. |
+| `Ocean.GetDepthOf`, `Subtitles.Add` | 5 | Viraram **estáticos**; basta qualificar pelo tipo. |
+| `HandReticle.Hand` | 4 | Mais uma sobrecarga na extensão que já existe em `GameCompat/`. |
+| `HashSet.AddIfNotPresent`, `Queue.TryDequeue` | 4 | Extensões triviais (o net472 não tem `TryDequeue`). |
+| `CraftTreeHandler`, `ModCraftTreeRoot`, `KnownTechHandler`, `BioReactorHandler` | 7 | Lacunas da ponte. Os quatro **existem no Nautilus** — é só reexportar, com o cuidado do `CS0104` do §3.6. |
+
+#### Balde B — o símbolo foi apagado do jogo
+
+Verificado no `Assembly-CSharp` 82304: `cookedCreatureList`, `craftingTimes`,
+`GetPickupSound` e `GetBindingName` **não aparecem em lugar nenhum** do assembly. Não é
+um `using` faltando; o jogo removeu.
+
+| sintoma | sítios | o que decidir |
+| --- | --- | --- |
+| `GameInput.GetBindingName` | 11 | Como mostrar o nome da tecla ao jogador. O `GameInputLegacy` expõe `GetBindingInternal`, mas é outra forma. |
+| `CraftData.cookedCreatureList` | 6 | Reconstruir a tabela de peixe cozido. |
+| `PDA.screen` | 3 | Mudou de forma. |
+| `Player.pdaSpawn`, `uGUI.isLoading`, `Inventory.PickupAsync`, `EntryData.timeCapsule` | 8 | Idem, um a um. |
+| `CraftData.GetPickupSound` | 1 | Idem. |
+
+**Este balde é o que separa "compila" de "funciona".** Nenhum deles tem resposta óbvia, e
+inventar chamada aqui é exatamente o que o `PROJECT_CONTEXT.md` proíbe.
+
+### O que este número não diz
+
+Ele mede **só a suíte FCS** (7 dos mods instalados) e mede **só compilação**. Nada disso
+foi aberto em jogo — este ambiente é Linux, sem Subnautica. Asset, registro de prefab e
+dado de save continuam sem verificação nenhuma.
+
 ## 4. O que a ponte ainda não cobre
 
 | Pendente | Por quê |
 | --- | --- |
 | `ModUtils.Save` / `LoadSaveData` | Mexe em **dados de save**. Errar aqui corrompe o save do jogador, então merece verificação própria antes de ser escrito — não vale deduzir. |
 | `OptionsPanelHandler` / `ConsoleCommandsHandler` | ⚠️ Os **atributos** existem e fazem compilar, mas são **apenas de declaração**: o painel de opções e os comandos de console **ainda não são registrados em jogo**. Um mod portado agora terá as opções ignoradas — sem erro visível. Ligar ao `Nautilus.Options` e ao `ConsoleCommandsHandler` é o próximo passo. |
-| `SpriteHandler`, `KnownTechHandler`, `CraftTreeHandler`, `PDAHandler`, `BioReactorHandler` | ≤6 usos cada. |
+| `SpriteHandler`, `KnownTechHandler`, `CraftTreeHandler`, `PDAHandler`, `BioReactorHandler` | ≤6 usos cada. Medido no §3.7: 7 sítios no FCS inteiro, e os quatro últimos **existem no Nautilus** — é reexportação, não implementação. |
+| Dependências externas: `MoreCyclopsUpgrades`, `NAudio` | Não são API legada, são **outros mods/bibliotecas**. O `MoreCyclopsUpgrades` o operador já tem instalado; o `NAudio` é MIT e está no NuGet. Enquanto não forem referenciados de verdade, ficam como stub **de medição, fora do repositório**. |
+
+**Já cobertos** (era pendência, deixou de ser):
+
+| Coberto | Como |
+| --- | --- |
+| `SMLHelper.V2.Assets.Equipable` | `Assets/Equipable.cs` — herda de `Craftable` e traduz `EquipmentType`/`QuickSlotType` para o gadget `SetEquipment` do Nautilus. |
+| `SMLHelper.V2.Json.ExtensionMethods` | `Json/ExtensionMethods.cs` — `SaveJson`/`LoadJson` encaminhando para o `Nautilus.Json.ExtensionMethods.JsonExtensions`. Método de extensão não se repassa por herança, então aqui é redeclaração. ⚠️ Não misture os dois `using` no mesmo arquivo: dá `CS0121`. |
 
 ## 5. Ordem recomendada
 
