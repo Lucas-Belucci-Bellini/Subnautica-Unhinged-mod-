@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using FCS_AlterraHub.Systems;
 using FCSCommon.Utilities;
@@ -12,59 +12,58 @@ namespace FCS_AlterraHub.Patches
     [HarmonyPatch(typeof(EndCreditsManager), nameof(EndCreditsManager.Start))]
     public class EndCreditsManager_Start_Patch
     {
-        [HarmonyPrefix]
-        public static bool Prefix(EndCreditsManager __instance)
-        {
-#if SUBNAUTICA
+        /// <summary>
+        /// Quanto tempo os créditos levam para rolar até o fim.
+        ///
+        /// ⚠️ VALOR A CALIBRAR EM JOGO. O original lia
+        /// <c>EndCreditsManager.secondsUntilScrollComplete</c>, campo que **não existe
+        /// mais**: o jogo reescreveu a classe inteira — o texto em três colunas
+        /// (<c>leftText</c>/<c>centerText</c>/<c>rightText</c>) virou um
+        /// <c>textField</c> só, e a rolagem virou baseada em fases
+        /// (<c>phase</c>, <c>scrollSpeed</c>, <c>contentHeight</c>).
+        ///
+        /// A duração equivalente **não é derivável** dos campos novos no <c>Start</c>:
+        /// <c>contentHeight</c> só é preenchido depois do layout. Deixar um número
+        /// explícito e nomeado é honesto; inventar uma fórmula com cara de precisa
+        /// seria pior. Se a fala entrar cedo ou tarde demais, é este número que muda.
+        /// </summary>
+        internal const float CreditsScrollSeconds = 200f;
 
+        // ─────────────────────────────────────────────────────────────────────────
+        // PORTE — de Prefix para Postfix.
+        //
+        // O original era um **Prefix que reimplementava o `Start()` da vanilla**: mexia
+        // em `fadeLogo`, `startFadeTime`, `goToPos`, trocava os textos de PS4 e chamava
+        // `PlayMusic`, para então devolver `false` e impedir o original de rodar.
+        //
+        // Nenhum desses campos existe hoje. Reimplementar um `Start()` que foi reescrito
+        // seria adivinhar; e a parte do FCS que interessa não é a rolagem — é a fala de
+        // fim conforme a dívida. Como Postfix, a vanilla cuida da própria animação e o
+        // FCS só acrescenta o que é dele. Menos superfície, mesmo efeito.
+        // ─────────────────────────────────────────────────────────────────────────
+        [HarmonyPostfix]
+        public static void Postfix(EndCreditsManager __instance)
+        {
             try
             {
-                if (PlatformUtils.isPS4Platform)
-                {
-                    __instance.leftText.text = __instance.ps4CreditsLeft;
-                    __instance.centerText.text = __instance.ps4CreditsCenter;
-                    __instance.rightText.text = __instance.ps4CreditsRight;
-                }
+                if (__instance == null || CardSystem.main == null) return;
 
-                __instance.fadeLogo = true;
-                __instance.startFadeTime = Time.time;
-                __instance.Invoke("PlayMusic", 0.5f);
-#if SUBNAUTICA_STABLE
-                __instance.goToPos = new Vector3(0f, (float)__instance.scrollMaxValue, 0f);
-#else
-                __instance.goToPos = new Vector3(0f,
-                    __instance.centerText.preferredHeight +
-                    __instance.creditsText.parent.GetComponent<RectTransform>().rect.height, 0f);
-#endif
+                string key = null;
+                if (CardSystem.main.IsDebitPaid()) key = "Play_DebtPaid";
+                else if (CardSystem.main.HasPaymentBeenMadeToDebit()) key = "Play_NotDebtPaid";
 
-                if (CardSystem.main.IsDebitPaid())
-                {
-                    __instance.StartCoroutine(ReturnToMainMenu(__instance.secondsUntilScrollComplete, "Play_DebtPaid"));
-                    //QPatch.MissionManagerGM.NotifyTechTypeConstructed(__instance.techType);
-                }
-                else if (CardSystem.main.HasPaymentBeenMadeToDebit())
-                {
-                    __instance.StartCoroutine(ReturnToMainMenu(__instance.secondsUntilScrollComplete,
-                        "Play_NotDebtPaid"));
-                }
-                else
-                {
-                    return true;
-                }
+                // Sem dívida quitada nem pagamento parcial: créditos vanilla, sem fala.
+                if (key == null) return;
 
-                return false;
+                __instance.StartCoroutine(ReturnToMainMenu(CreditsScrollSeconds, key));
             }
             catch (Exception e)
             {
+                // Um patch de créditos não pode derrubar o fim da história.
                 QuickLogger.Error(e.Message);
                 QuickLogger.Error(e.StackTrace);
-                QuickLogger.Info("Failed to patch EndCreditManager returning to origin");
-                // Give back execution to origin function.
-                return true;
+                QuickLogger.Info("Falha ao aplicar o patch do EndCreditsManager; créditos seguem os da vanilla.");
             }
-#else
-            return true;
-#endif
         }
 
         public static IEnumerator ReturnToMainMenu(float seconds, string key)

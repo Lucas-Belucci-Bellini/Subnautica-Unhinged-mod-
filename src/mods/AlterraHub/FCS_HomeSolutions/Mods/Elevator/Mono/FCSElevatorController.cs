@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using FCS_AlterraHub.Buildables;
 using FCS_AlterraHub.Helpers;
@@ -542,7 +542,7 @@ namespace FCS_HomeSolutions.Mods.Elevator.Mono
             }
 
 
-            var key = GameInput.GetBindingName(GameInput.Button.Reload, GameInput.BindingSet.Primary);
+            var key = UnhingedInput.GetBindingName(GameInput.Button.Reload, GameInput.BindingSet.Primary);
 
             //var message = hand.IsTool()
             //    ? "Please clear hand to call elevator"

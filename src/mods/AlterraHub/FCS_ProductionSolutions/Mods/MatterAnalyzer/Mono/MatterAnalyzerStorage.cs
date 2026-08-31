@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using FCS_AlterraHub.Helpers;
 using FCS_AlterraHub.Interfaces;
@@ -45,34 +45,20 @@ namespace FCS_ProductionSolutions.Mods.MatterAnalyzer.Mono
 
                 if (growingPlant != null)
                 {
-#if SUBNAUTICA
-                    var pickPrefab = GetPickPrefab(growingPlant);
-                    
-                    if (pickPrefab != null)
-                    {
-                        QuickLogger.Debug($"PickPrefab: {Language.main.Get(pickPrefab.pickTech)}", true);
-                        _device.PickTech = pickPrefab.pickTech;
-                        pickTypeSet = true;
-                    }
-                    else
-                    {
-                        QuickLogger.Debug($"PickPrefab Not Found Checking Pickupable", true);
-                        var pickup = growingPlant.grownModelPrefab.GetComponentInChildren<Pickupable>();
-                        if (pickup != null)
-                        {
-                            QuickLogger.Debug($"Pickup: {Language.main.Get(pickup.GetTechType())}", true);
-                            _device.PickTech = pickup.GetTechType();
-                            pickTypeSet = true;
-                        }
-                    }
-#else
+                    // PORTE — o `grownModelPrefab` virou `AssetReferenceGameObject`
+                    // (Addressables), e nesta versao do Addressables NAO existe carga
+                    // sincrona (`WaitForCompletion` so chegou depois), entao escavar o
+                    // prefab aqui exigiria refazer isto em corrotina.
+                    //
+                    // Nao precisa: o ramo BELOWZERO do proprio FCS ja lia o
+                    // `growingPlant.plantTechType` direto — e esse campo continua
+                    // existindo no jogo atual. Mesmo resultado, sem carga de asset.
                     if (growingPlant.plantTechType != TechType.None)
                     {
                         QuickLogger.Debug($"Pickup: {Language.main.Get(growingPlant.plantTechType)}", true);
                         _device.PickTech = growingPlant.plantTechType;
                         pickTypeSet = true;
                     }
-#endif
 
                     if (!pickTypeSet)
                     {
@@ -95,13 +81,6 @@ namespace FCS_ProductionSolutions.Mods.MatterAnalyzer.Mono
 
             return true;
         }
-
-#if SUBNAUTICA
-        private static PickPrefab GetPickPrefab(GrowingPlant growingPlant)
-        {
-            return growingPlant.grownModelPrefab.GetComponentInChildren<PickPrefab>();
-        }
-#endif
 
         public bool IsAllowedToAdd(Pickupable pickupable, bool verbose)
         {

@@ -289,11 +289,10 @@ namespace FCS_ProductionSolutions.Mods.DeepDriller.HeavyDuty.Mono
 
             if (powercell.charge <= 0 || _powerBank.Battery.IsFull()) 
             {
-#if SUBNAUTICA
-                yield return Inventory.main.PickupAsync(powercell.gameObject.GetComponent<Pickupable>(),taskResult);
-#else
+                // PORTE — `Inventory.PickupAsync` nao existe mais; o jogo so expoe o `Pickup`
+            // sincrono. O `taskResult` do original era criado e nunca lido, entao a troca
+            // nao perde informacao — e e a forma que o ramo BELOWZERO do FCS ja usava.
                 yield return Inventory.main.Pickup(powercell.gameObject.GetComponent<Pickupable>(), true);
-#endif
                 yield break;
             }
 
@@ -309,11 +308,10 @@ namespace FCS_ProductionSolutions.Mods.DeepDriller.HeavyDuty.Mono
             //Add the new battery amount
             _powerBank.Battery.AddCharge(amount);
 
-#if SUBNAUTICA
-                yield return Inventory.main.PickupAsync(powercell.gameObject.GetComponent<Pickupable>(),taskResult);
-#else
+            // PORTE — `Inventory.PickupAsync` nao existe mais; o jogo so expoe o `Pickup`
+            // sincrono. O `taskResult` do original era criado e nunca lido, entao a troca
+            // nao perde informacao — e e a forma que o ramo BELOWZERO do FCS ja usava.
             yield return Inventory.main.Pickup(powercell.gameObject.GetComponent<Pickupable>(), true);
-#endif
 
             //Notify the drill of the change
             OnBatteryUpdate?.Invoke(_powerBank.Battery);

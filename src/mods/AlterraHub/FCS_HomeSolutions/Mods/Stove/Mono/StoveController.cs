@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,7 +119,7 @@ namespace FCS_HomeSolutions.Mods.Stove.Mono
                 _allowedTech = new HashSet<TechType>();
 
 #if SUBNAUTICA
-                foreach (var item in CraftData.cookedCreatureList)
+                foreach (var item in UnhingedFood.CookedCreatureList)
                 {
                     _allowedTech.AddIfNotPresent(item.Key);
                 }
@@ -276,9 +276,9 @@ namespace FCS_HomeSolutions.Mods.Stove.Mono
 
 #if SUBNAUTICA 
             TechType foodData = TechType.None;
-            if (CraftData.cookedCreatureList.ContainsKey(techType))
+            if (UnhingedFood.CookedCreatureList.ContainsKey(techType))
             {
-                foodData = CraftData.cookedCreatureList[techType];
+                foodData = UnhingedFood.CookedCreatureList[techType];
 #else
 
             var foodData = TechData.GetProcessed(techType);

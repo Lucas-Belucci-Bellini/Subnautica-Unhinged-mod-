@@ -411,13 +411,13 @@ namespace FCS_ProductionSolutions.Mods.DeepDriller.Managers
                 _sb.Clear();
                 _sb.Append(UnitID);
                 _sb.Append(Environment.NewLine);
-                _sb.Append(AuxPatchers.PressKeyToOperate(GameInput.GetBindingName(GameInput.Button.Exit, GameInput.BindingSet.Primary), "Deep Driller"));
+                _sb.Append(AuxPatchers.PressKeyToOperate(UnhingedInput.GetBindingName(GameInput.Button.Exit, GameInput.BindingSet.Primary), "Deep Driller"));
 
 
                 if (UseOnScreenUi)
                 {
                     _sb.Append(Environment.NewLine);
-                    _sb.Append($"Press: {GameInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary)} to open interface."); 
+                    _sb.Append($"Press: {UnhingedInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary)} to open interface."); 
 
                     if (GameInput.GetButtonDown(GameInput.Button.AltTool))
                     {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FCS_AlterraHub.Buildables;
@@ -331,7 +331,7 @@ namespace FCS_HomeSolutions.Mods.LedLights.Mono
                 var data = new[]
                 {
                     AuxPatchers.ClickToRotate(),
-                    AuxPatchers.PressToToggleLightFormat(GameInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary),
+                    AuxPatchers.PressToToggleLightFormat(UnhingedInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary),
                         QPatch.Configuration.LEDLightBackwardKeyCode.ToString(),
                         QPatch.Configuration.LEDLightForwardKeyCode.ToString(),
                         QPatch.Configuration.LEDLightNightSensorToggleKeyCode.ToString(),
@@ -344,7 +344,7 @@ namespace FCS_HomeSolutions.Mods.LedLights.Mono
             {
                 var data = new[]
                 {
-                    AuxPatchers.PressToToggleLightFormat(GameInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary),
+                    AuxPatchers.PressToToggleLightFormat(UnhingedInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary),
                         QPatch.Configuration.LEDLightBackwardKeyCode.ToString(),
                         QPatch.Configuration.LEDLightForwardKeyCode.ToString(),
                         QPatch.Configuration.LEDLightNightSensorToggleKeyCode.ToString(),
@@ -360,7 +360,7 @@ namespace FCS_HomeSolutions.Mods.LedLights.Mono
             {
                 var data = new[]
                 {
-                    AuxPatchers.PressToToggleLightFormat(GameInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary),
+                    AuxPatchers.PressToToggleLightFormat(UnhingedInput.GetBindingName(GameInput.Button.AltTool, GameInput.BindingSet.Primary),
                         QPatch.Configuration.LEDLightBackwardKeyCode.ToString(),
                         QPatch.Configuration.LEDLightForwardKeyCode.ToString(),
                         QPatch.Configuration.LEDLightNightSensorToggleKeyCode.ToString(),

@@ -69,8 +69,11 @@ Se ele **não existir**, então o plugin não carregou — e aí o que interessa
 
 | Arquivo | O quê |
 | --- | --- |
-| `Unhinged.Core.dll` | O plugin. É o único que o BepInEx carrega. |
-| `Unhinged.Legacy.dll` | A ponte SMLHelper→Nautilus. **Biblioteca**, não plugin: fica parada até um mod portado usá-la. É esperado o relatório dizer que ela não está carregada. |
+| `Unhinged.Core.dll` | O plugin. É o único arquivo do pacote. |
+
+A ponte `Unhinged.Legacy.dll` **não vem aqui** — o Core não a usa, e mandar uma segunda
+cópia dela junto colocaria o mesmo assembly em duas pastas de `plugins/` para quem também
+instalasse o Alterra Hub. Ela viaja só com os pacotes que dependem dela.
 
 Nenhum arquivo de terceiro é redistribuído aqui. Os dois DLLs são código deste projeto.
 

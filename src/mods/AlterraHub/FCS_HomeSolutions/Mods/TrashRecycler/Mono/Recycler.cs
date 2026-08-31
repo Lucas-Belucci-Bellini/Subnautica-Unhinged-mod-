@@ -130,12 +130,10 @@ namespace FCS_HomeSolutions.Mods.TrashRecycler.Mono
                 EnergyMixin component = gameObject.GetComponent<EnergyMixin>();
                 if (component)
                 {
-                    GameObject battery = component
-#if SUBNAUTICA
-                        .GetBattery();
-#else
-                        .GetBatteryGameObject();
-#endif
+                    // PORTE — `GetBattery()` agora devolve `IBattery`, nao o GameObject.
+                    // O `GetBatteryGameObject()` (que o ramo BELOWZERO ja usava) e o que
+                    // continua devolvendo o objeto, que e o que o codigo abaixo precisa.
+                    GameObject battery = component.GetBatteryGameObject();
                     if (battery)
                     {
                         QuickLogger.Debug($"Removing Battery from {Language.main.Get(techType)}", true);

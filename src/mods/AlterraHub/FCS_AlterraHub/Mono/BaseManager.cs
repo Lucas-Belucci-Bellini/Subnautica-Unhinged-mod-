@@ -1198,7 +1198,7 @@ namespace FCS_AlterraHub.Mono
             var validServers = new List<ISlotController>();
 
 #if SUBNAUTICA
-            var techDataResult = CraftData.cookedCreatureList.ContainsValue(techType) || WorldHelpers.Eatables.Contains(techType);
+            var techDataResult = UnhingedFood.CookedCreatureList.ContainsValue(techType) || WorldHelpers.Eatables.Contains(techType);
 #else
             var techDataResult = WorldHelpers.Eatables.Contains(techType);
 #endif

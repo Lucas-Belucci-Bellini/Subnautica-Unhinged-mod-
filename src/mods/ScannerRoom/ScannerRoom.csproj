@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Sala de Scanner — mod proprio, release propria.
+
+    Nao depende do Alterra Hub nem do Unhinged.Core: mexe so em classes do jogo base
+    (MapRoomFunctionality, MapRoomCamera, MapRoomScreen). Da para instalar sozinho.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>Unhinged.ScannerRoom</AssemblyName>
+    <RootNamespace>Unhinged.ScannerRoom</RootNamespace>
+    <Version>0.1.0</Version>
+    <Description>Alcance de scanner e de drone acima do vanilla, na sala de scanner.</Description>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Subnautica.GameLibs" Version="82304.0.0-r.0" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" PrivateAssets="all" />
+    <PackageReference Include="UnityEngine.Modules" Version="2019.4.36" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

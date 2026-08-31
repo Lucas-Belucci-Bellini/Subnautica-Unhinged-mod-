@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.IO;
 using FCS_AlterraHub.Configuration;
 using FCS_AlterraHub.Helpers;
 using FCS_AlterraHub.Interfaces;
 using FCSCommon.Utilities;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 #if SUBNAUTICA_STABLE
 using Oculus.Newtonsoft.Json;
 #else
@@ -111,7 +112,23 @@ namespace FCS_AlterraHub.Model
             try
             {
                 growingTransform.gameObject.SetActive(false);
-                GameObject go = Instantiate<GameObject>(grownModelPrefab, growingTransform.position,growingTransform.rotation);
+                // Nesta versao do Addressables nao ha carga sincrona (`WaitForCompletion`
+                // so chegou em versoes posteriores). Entao: se o prefab ainda nao estiver
+                // carregado, dispara a carga e sai. Este metodo e chamado do `Update`
+                // enquanto o progresso for 1, entao o proximo quadro tenta de novo — sem
+                // corrotina e sem perder o spawn, so adiando alguns quadros.
+                GameObject prefab = grownModelPrefab != null ? grownModelPrefab.Asset as GameObject : null;
+                if (prefab == null)
+                {
+                    if (grownModelPrefab != null && !_carregandoPrefab)
+                    {
+                        _carregandoPrefab = true;
+                        grownModelPrefab.LoadAssetAsync<GameObject>();
+                    }
+                    return;
+                }
+
+                GameObject go = Instantiate<GameObject>(prefab, growingTransform.position, growingTransform.rotation);
                 SetScale(go.transform, 1f);
                 if (isPickupable)
                 {
@@ -264,7 +281,13 @@ namespace FCS_AlterraHub.Model
 
         public Transform growingTransform;
 
-        public GameObject grownModelPrefab;
+        // PORTE — o `GrowingPlant.grownModelPrefab` do jogo virou
+        // `AssetReferenceGameObject` (migracao para Addressables), entao este campo, que
+        // so repassa aquele valor, acompanha o tipo.
+        public AssetReferenceGameObject grownModelPrefab;
+
+        /// <summary>Evita disparar a mesma carga de asset a cada quadro do Update.</summary>
+        private bool _carregandoPrefab;
 
         public Plantable seed;
 

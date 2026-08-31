@@ -1,40 +1,71 @@
 #!/usr/bin/env bash
-# Empacota o release instalável. Uso: build/empacotar.sh [versao]
+# Empacota os releases instalaveis, UM ZIP POR PACOTE.
 #
-# Gera dist/SubnauticaUnhinged-vX.Y.Z.zip com a árvore que se mescla na pasta do jogo.
-# NÃO instala nada: só escreve em dist/. Instalar é decisão de quem baixa.
+#   build/empacotar.sh            # todos os pacotes
+#   build/empacotar.sh core       # so o Core
+#   build/empacotar.sh alterrahub # so o Alterra Hub
+#
+# NAO instala nada: so escreve em dist/. Instalar e decisao de quem baixa.
 set -euo pipefail
 
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$RAIZ"
 
-VERSAO="${1:-$(grep -oP '(?<=Version = ")[^"]+' src/Unhinged.Core/UnhingedInfo.cs)}"
-PKG="dist/SubnauticaUnhinged-v${VERSAO}"
-PLUGINS="$PKG/BepInEx/plugins/SubnauticaUnhinged"
-
 : "${NautilusDll:=$RAIZ/refs/Nautilus.dll}"
-[ -f "$NautilusDll" ] || { echo "ERRO: Nautilus.dll não encontrado em $NautilusDll (ver refs/README.md)"; exit 1; }
+[ -f "$NautilusDll" ] || { echo "ERRO: Nautilus.dll nao encontrado em $NautilusDll (ver refs/README.md)"; exit 1; }
 
-echo "→ compilando Release…"
-rm -rf artifacts
-dotnet build Unhinged.sln -c Release -p:NautilusDll="$NautilusDll"
+# Cada pacote e uma pasta propria em BepInEx/plugins/, com sua versao e seu ZIP.
+# É o que permite lancar um mod sem esperar o outro.
+empacotar() {
+  local nome="$1" csproj="$2" versao="$3" leiame="$4"; shift 4
+  local dlls=("$@")
 
-echo "→ montando $PKG…"
-rm -rf "$PKG" "$PKG.zip"
-mkdir -p "$PLUGINS"
-cp artifacts/Unhinged.Core/Release/Unhinged.Core.dll     "$PLUGINS/"
-cp artifacts/Unhinged.Legacy/Release/Unhinged.Legacy.dll "$PLUGINS/"
-cp LICENSE CREDITOS.md "$PKG/"
-cp docs/LEIA-ME-RELEASE.md "$PKG/LEIA-ME.md"
+  local pkg="dist/$nome-v$versao"
+  local plugins="$pkg/BepInEx/plugins/$nome"
 
-# Rede de segurança: o .gitignore já barra binário no repo, mas o pacote é o que sai
-# para fora — vale conferir aqui também que nenhum DLL de terceiro entrou por engano.
-INTRUSOS=$(find "$PKG" -name '*.dll' ! -name 'Unhinged.*.dll' -print)
-[ -z "$INTRUSOS" ] || { echo "ERRO: DLL de terceiro no pacote:"; echo "$INTRUSOS"; exit 1; }
+  echo "→ $nome v$versao"
+  dotnet build "$csproj" -c Release -p:NautilusDll="$NautilusDll" >/dev/null
 
-echo "→ zipando…"
-( cd dist && zip -r -q "SubnauticaUnhinged-v${VERSAO}.zip" "SubnauticaUnhinged-v${VERSAO}" )
+  rm -rf "$pkg" "$pkg.zip"
+  mkdir -p "$plugins"
+  for d in "${dlls[@]}"; do cp "$d" "$plugins/"; done
+  cp LICENSE CREDITOS.md "$pkg/"
+  cp "$leiame" "$pkg/LEIA-ME.md"
+  [ -f "src/mods/$nome/LICENSE-FCS.txt" ] && cp "src/mods/$nome/LICENSE-FCS.txt" "$pkg/"
 
-echo
-echo "pronto: $PKG.zip"
-sha256sum "$PKG.zip"
+  # O .gitignore ja barra binario no repo, mas o pacote e o que sai para fora:
+  # vale conferir aqui tambem que nenhum DLL de terceiro entrou por engano.
+  local intrusos
+  intrusos=$(find "$pkg" -name '*.dll' ! -name 'Unhinged.*.dll' -print)
+  [ -z "$intrusos" ] || { echo "ERRO: DLL de terceiro no pacote:"; echo "$intrusos"; exit 1; }
+
+  ( cd dist && zip -r -q "$nome-v$versao.zip" "$nome-v$versao" )
+  echo "   $pkg.zip"
+  sha256sum "$pkg.zip"
+}
+
+ALVO="${1:-todos}"
+mkdir -p dist
+
+if [ "$ALVO" = "todos" ] || [ "$ALVO" = "core" ]; then
+  V=$(grep -oP '(?<=Version = ")[^"]+' src/Unhinged.Core/UnhingedInfo.cs)
+  # SO o Core: ele NAO referencia o Unhinged.Legacy (confirmado no DLL compilado —
+  # so 0Harmony e BepInEx). Enviar a ponte aqui tambem colocava DUAS copias do mesmo
+  # assembly em pastas diferentes de plugins/ para quem instalasse Core + AlterraHub,
+  # que e receita de conflito de identidade de assembly. A ponte vai so onde e usada.
+  empacotar "SubnauticaUnhinged" "Unhinged.sln" "$V" "docs/LEIA-ME-RELEASE.md" \
+    artifacts/Unhinged.Core/Release/Unhinged.Core.dll
+fi
+
+if [ "$ALVO" = "todos" ] || [ "$ALVO" = "scannerroom" ]; then
+  V=$(grep -oP '(?<=<Version>)[^<]+' src/mods/ScannerRoom/ScannerRoom.csproj)
+  empacotar "ScannerRoom" "src/mods/ScannerRoom/ScannerRoom.csproj" "$V" "src/mods/ScannerRoom/LEIA-ME-RELEASE.md" \
+    artifacts/ScannerRoom/Release/Unhinged.ScannerRoom.dll
+fi
+
+if [ "$ALVO" = "todos" ] || [ "$ALVO" = "alterrahub" ]; then
+  V=$(grep -oP '(?<=<Version>)[^<]+' src/mods/AlterraHub/AlterraHub.csproj)
+  empacotar "AlterraHub" "src/mods/AlterraHub/AlterraHub.csproj" "$V" "src/mods/AlterraHub/LEIA-ME-RELEASE.md" \
+    artifacts/AlterraHub/Release/Unhinged.AlterraHub.dll \
+    artifacts/AlterraHub/Release/Unhinged.Legacy.dll
+fi
