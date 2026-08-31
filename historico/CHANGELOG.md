@@ -1,5 +1,30 @@
 # Changelog — Subnautica Unhinged
 
+## [AlterraHub 1.0.7] — 2026-08-31 — o ZIP tinha uma pasta de topo
+
+### Corrigido
+- **O empacotador gerava um ZIP que o BepInEx nunca leria.** `zip -r pacote.zip pasta/`
+  põe a pasta na raiz do arquivo, então o ZIP entregue era
+  `AlterraHub-v1.0.6/BepInEx/plugins/…`. Quem extraía na pasta do Subnautica ficava com
+  `Subnautica\AlterraHub-v1.0.6\BepInEx\plugins\` — caminho fora da varredura do
+  BepInEx. O jogo abria normal, nada quebrava, e o mod simplesmente não existia. Agora
+  compacta de dentro da pasta, e a raiz é `BepInEx/`. **Valia para os três pacotes** —
+  Core e ScannerRoom estavam igualmente mortos, só que ninguém os tinha instalado.
+- **`empacotar.sh` agora confere o próprio ZIP**: exige `BepInEx/plugins/` na raiz e
+  recusa publicar se a pasta de topo voltar. O erro foi entregar artefato sem abrir.
+- **CI: a tag do Nautilus passou a ser explícita.** Todo release 1.x do Nautilus é
+  *pre-release*, e `gh release … latest` os ignora — o download caía no release antigo
+  do SMLHelper 2.15 (o repositório foi renomeado). Sem tag, nunca traria o Nautilus.
+
+### Publicado
+Primeiras releases no GitHub: `alterrahub-v1.0.7`, `scannerroom-v0.1.0`, `core-v0.1.0`.
+A `alterrahub-v1.0.6` continua no repositório mas **não funciona** — é a do ZIP quebrado.
+
+### Ainda sem verificação em jogo
+Os defeitos corrigidos em 1.0.3 (caminho de asset), 1.0.5 (patch aplicado 7×) e 1.0.6
+(`unlockAtStart` invertido) são reais e continuam corrigidos, mas **nenhum deles foi
+exercitado**: o mod nunca chegou a carregar. A 1.0.7 é a primeira que pode ser testada.
+
 ## [0.1.0] — 2026-08-30 — primeiro pacote instalável
 
 Primeira versão que se instala e roda no jogo. É **base, não mega-mod**: não junta
