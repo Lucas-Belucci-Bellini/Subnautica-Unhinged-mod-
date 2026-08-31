@@ -286,7 +286,13 @@ namespace FCS_EnergySolutions.Configuration
 
         internal static string GetModDirectory()
         {
-            return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            // PORTE — os 7 modulos viraram UM assembly, entao o
+            // `GetExecutingAssembly().Location` agora e o mesmo para todos: sem a
+            // subpasta, as 7 pastas Assets teriam de ser mescladas a mao, com colisao
+            // silenciosa de nome entre modulos. `ModuleFolder` devolve
+            // `<pasta do DLL>/FCS_EnergySolutions`, espelhando o layout do QMods original — e cai
+            // de volta na pasta do DLL se a subpasta nao existir.
+            return UnhingedModPaths.ModuleFolder(Assembly.GetExecutingAssembly(), "FCS_EnergySolutions");
         }
 
         public static string GetAssetPath()

@@ -4,18 +4,44 @@ Os **7 módulos do FCStudios num pacote só**: Alterra Hub, Energy, Home, Life S
 Production, Storage e Cyclops Upgrade Console. Escritos por **Field Creator Studios**
 (MIT); o porte para o Subnautica moderno é do projeto Unhinged.
 
-## ⛔ Isto sozinho NÃO funciona. Leia antes de instalar.
+## ⛔ Isto sozinho NÃO funciona — e o "onde" importa
 
-**Este pacote é só o código.** O FCS carrega **7 asset bundles** — `fcsalterrahubbundle`,
-`fcsenergysolutionsbundle`, `fcshomesolutionsbundle`, `fcslifesupportsolutionsbundle`,
-`fcsproductionsolutionsbundle`, `fcsstoragesolutionsbundle`, `cyclopsupgradeconsolebundle` —
-que contêm **todos os modelos, ícones, telas e sons**.
+**Este pacote é só o código.** Os modelos, ícones, telas e sons vivem em **7 asset
+bundles** do FCStudios, que não estão aqui e não podem estar: são assets deles, e este
+projeto não redistribui asset de terceiro.
 
-Esses arquivos **não estão aqui** e não podem estar: são assets do FCStudios,
-distribuídos por eles, e este projeto não redistribui asset de terceiro.
+Sem eles o mod carrega e registra as receitas, mas **cada item aparece sem modelo e sem
+ícone**.
 
-Sem os bundles, o mod carrega e registra as receitas, mas **cada item aparece sem
-modelo e sem ícone**. Os bundles vêm da distribuição original do FCS Mod Suite.
+### Onde os assets vão (a v1.0.2 não dizia isto — era o defeito)
+
+Cada módulo procura os arquivos numa **subpasta com o nome dele, ao lado do DLL**. Copie
+cada pasta do FCS original (a que ficava em `QMods/`) para dentro de
+`BepInEx\plugins\AlterraHub\`, com o nome intacto:
+
+```
+Subnautica\BepInEx\plugins\AlterraHub\
+├── Unhinged.AlterraHub.dll
+├── Unhinged.Legacy.dll
+├── FCS_AlterraHub\Assets\...
+├── FCS_EnergySolutions\Assets\...
+├── FCS_HomeSolutions\Assets\...
+├── FCS_LifeSupportSolutions\Assets\...
+├── FCS_ProductionSolutions\Assets\...
+├── FCS_StorageSolutions\Assets\...
+└── FCS_CyclopsUpgradeConsole\Assets\...
+```
+
+É o **mesmo formato do `QMods/` original** — não mescle nada, só mova as pastas inteiras.
+
+**Por que a subpasta e não uma pasta `Assets` só.** O código do FCS acha os arquivos com
+`Assembly.GetExecutingAssembly().Location`. Quando cada módulo era um DLL próprio, isso
+dava a pasta daquele módulo. Fundidos num assembly só, os sete passaram a apontar para o
+**mesmo** lugar — juntar as sete pastas `Assets` numa só faria arquivos de módulos
+diferentes se sobrescreverem em silêncio. A subpasta por módulo devolve a separação.
+
+Se você já instalou de forma achatada (tudo numa `Assets` só), continua funcionando: sem
+a subpasta, o mod cai de volta na pasta do DLL.
 
 ## ⚠️ E mais importante: nada disto foi testado em jogo
 
@@ -33,7 +59,8 @@ Pré-requisitos: **BepInEx 5** e **Nautilus** instalados e funcionando.
 1. Feche o jogo.
 2. Copie a pasta `BepInEx` deste ZIP para dentro da pasta do Subnautica, **mesclando**.
    Resultado: `Subnautica\BepInEx\plugins\AlterraHub\Unhinged.AlterraHub.dll`
-3. Copie os 7 asset bundles do FCS para onde o mod os procura (ver acima).
+3. Copie as 7 pastas de assets do FCS conforme o layout acima. **Sem elas o mod carrega
+   sem modelo e sem ícone.**
 
 **Desinstalar:** apague a pasta `BepInEx\plugins\AlterraHub`.
 

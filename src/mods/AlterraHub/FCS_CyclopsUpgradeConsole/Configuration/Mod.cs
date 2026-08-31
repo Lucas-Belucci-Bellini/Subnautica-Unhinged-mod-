@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.IO;
+using System.Reflection;
 
 namespace CyclopsUpgradeConsole.Configuration
 {
@@ -17,14 +18,13 @@ namespace CyclopsUpgradeConsole.Configuration
         internal const string ModDescription = "A wall mountable upgrade console to connect a greater number of upgrades to your Cyclops.";
 
 
+        // PORTE — o original montava `<CWD>/QMods/FCS_CyclopsUpgradeConsole/Assets`,
+        // caminho fixo do QModManager. Numa instalacao so de BepInEx essa pasta NAO
+        // EXISTE, e o modulo ficava sem asset nenhum — sem erro, sem log, so sem
+        // modelo. Agora resolve ao lado do DLL, como os outros seis.
         private static string GetModPath()
         {
-            return Path.Combine(GetQModsPath(), ModFolderName);
-        }
-
-        private static string GetQModsPath()
-        {
-            return Path.Combine(Environment.CurrentDirectory, "QMods");
+            return UnhingedModPaths.ModuleFolder(Assembly.GetExecutingAssembly(), ModFolderName);
         }
 
         internal static string GetAssetFolder()

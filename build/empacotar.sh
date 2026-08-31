@@ -49,9 +49,12 @@ mkdir -p dist
 
 if [ "$ALVO" = "todos" ] || [ "$ALVO" = "core" ]; then
   V=$(grep -oP '(?<=Version = ")[^"]+' src/Unhinged.Core/UnhingedInfo.cs)
+  # SO o Core: ele NAO referencia o Unhinged.Legacy (confirmado no DLL compilado —
+  # so 0Harmony e BepInEx). Enviar a ponte aqui tambem colocava DUAS copias do mesmo
+  # assembly em pastas diferentes de plugins/ para quem instalasse Core + AlterraHub,
+  # que e receita de conflito de identidade de assembly. A ponte vai so onde e usada.
   empacotar "SubnauticaUnhinged" "Unhinged.sln" "$V" "docs/LEIA-ME-RELEASE.md" \
-    artifacts/Unhinged.Core/Release/Unhinged.Core.dll \
-    artifacts/Unhinged.Legacy/Release/Unhinged.Legacy.dll
+    artifacts/Unhinged.Core/Release/Unhinged.Core.dll
 fi
 
 if [ "$ALVO" = "todos" ] || [ "$ALVO" = "scannerroom" ]; then
