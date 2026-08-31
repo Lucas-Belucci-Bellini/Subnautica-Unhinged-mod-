@@ -52,6 +52,27 @@ execução seguem **inteiramente não verificados**.
 
 Trate como **build experimental**, não como release jogável. **Faça backup do save.**
 
+## ⛔ NÃO instale pelo Vortex
+
+O Vortex não conhece este formato: ele aceita o ZIP, mas não sabe onde cada arquivo vai.
+**Instalação é manual**, e o layout abaixo é o que importa.
+
+## ⛔ Não conviva com QModManager / SMLHelper
+
+Este pacote é da pilha **moderna** (BepInEx + Nautilus). A ponte reimplementa os
+namespaces `SMLHelper.V2.*` sobre o Nautilus — então, com o SMLHelper **de verdade**
+também carregado, os dois frameworks existem no mesmo processo e patcham os mesmos
+métodos do jogo (`CraftData`, `KnownTech`, `uGUI`…).
+
+Isso não dá erro limpo. Dá comportamento indefinido — inclusive **o jogo não carregar**.
+
+A partir da v1.0.4 o mod **se recusa a carregar** nesse cenário e escreve no log o que
+encontrou, em vez de rodar e corromper a carga. Se você quiser tentar assim mesmo, há a
+chave `ForcarComPilhaLegada` — por sua conta.
+
+Ou seja: ou você desativa QModManager/SMLHelper e usa os mods portados, ou fica com os
+originais. Os dois ao mesmo tempo, não.
+
 ## Instalação
 
 Pré-requisitos: **BepInEx 5** e **Nautilus** instalados e funcionando.

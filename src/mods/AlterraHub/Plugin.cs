@@ -13,7 +13,7 @@ namespace Unhinged.AlterraHub
     /// <c>[BepInPlugin]</c>. Sem esta classe, o DLL compilaria, seria ignorado no
     /// carregamento e o mod simplesmente não existiria em jogo — sem erro nenhum.
     /// </summary>
-    [BepInPlugin(Guid, "Subnautica Unhinged — Alterra Hub (FCStudios)", "1.0.3")]
+    [BepInPlugin(Guid, "Subnautica Unhinged — Alterra Hub (FCStudios)", "1.0.4")]
     // Hard, não Soft: ao contrário do Core, este pacote realmente chama a API do Nautilus
     // em toda receita e todo prefab. Carregar sem ele seria falhar mais tarde e pior.
     [BepInDependency(NautilusGuid, BepInDependency.DependencyFlags.HardDependency)]
@@ -29,8 +29,36 @@ namespace Unhinged.AlterraHub
         /// </summary>
         private const string ModuloBase = "FCS_AlterraHub";
 
+        private BepInEx.Configuration.ConfigEntry<bool> _forcarComPilhaLegada;
+
         private void Awake()
         {
+            // A ponte reimplementa `SMLHelper.V2.*` sobre o Nautilus. Com o SMLHelper de
+            // verdade tambem carregado, OS DOIS frameworks patcham os mesmos metodos do
+            // jogo — e o resultado nao e um erro limpo, e comportamento indefinido que
+            // pode travar a carga sem dizer por que. Recusar com mensagem clara e melhor
+            // do que rodar e corromper.
+            _forcarComPilhaLegada = Config.Bind(
+                "1. Compatibilidade", "ForcarComPilhaLegada", false,
+                "Carrega mesmo com QModManager/SMLHelper ativos. Padrao false: as duas "
+                + "pilhas patcham os mesmos metodos do jogo, e rodar as duas juntas e o "
+                + "cenario onde o jogo trava sem explicacao.");
+
+            var legada = PilhaLegada.Detectar();
+            if (legada.Count > 0 && !_forcarComPilhaLegada.Value)
+            {
+                Logger.LogError(
+                    "Alterra Hub NAO foi carregado: a pilha LEGADA de modding esta ativa junto "
+                    + "com a moderna, e as duas patcham os mesmos metodos do jogo.");
+                foreach (var item in legada) Logger.LogError($"  · {item}");
+                Logger.LogError(
+                    "Escolha uma: desative o QModManager/SMLHelper e use os mods portados, "
+                    + "ou desinstale este pacote e siga com os originais. Para tentar mesmo "
+                    + "assim, ligue 'ForcarComPilhaLegada' na configuracao — por sua conta, "
+                    + "e o cenario onde o jogo trava sem explicacao.");
+                return;
+            }
+
             try
             {
                 var executados = LegacyModLoader.Run(
