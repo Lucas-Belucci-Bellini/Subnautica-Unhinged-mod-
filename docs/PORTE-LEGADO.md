@@ -338,6 +338,62 @@ Ele mede **só a suíte FCS** (7 dos mods instalados) e mede **só compilação*
 foi aberto em jogo — este ambiente é Linux, sem Subnautica. Asset, registro de prefab e
 dado de save continuam sem verificação nenhuma.
 
+## 3.8 A quarta armadilha de medição, e a mais cara: o artefato
+
+As três do §3.7 eram erros de *contagem*. Esta é de outra família e custou quatro
+versões: **eu verifiquei a intenção, nunca o artefato entregue.**
+
+O operador reportou "instala e não aparece nada". Diagnostiquei três vezes, sempre
+lendo código, sempre encontrando um defeito **real**:
+
+| versão | defeito encontrado | era real? | era a causa? |
+| --- | --- | --- | --- |
+| 1.0.3 | caminho de asset achatado no merge | sim | não |
+| 1.0.5 | cada patch do FCS aplicado 7× | sim | não |
+| 1.0.6 | `unlockAtStart` invertido entre Nautilus e SMLHelper | sim | não |
+| 1.0.7 | **o ZIP tinha uma pasta de topo** | sim | **sim** |
+
+Os três primeiros são defeitos legítimos e continuam corrigidos — só que nenhum podia
+ser a causa, porque **o assembly nunca foi carregado**. O empacotador fazia:
+
+```bash
+( cd dist && zip -r "$nome-v$versao.zip" "$nome-v$versao" )   # ERRADO
+```
+
+Compactar a pasta *como argumento* a coloca na raiz do arquivo. O certo é compactar
+**de dentro** dela, para a raiz ser `BepInEx/`:
+
+```bash
+( cd "$pkg" && zip -r "$RAIZ/$pkg.zip" . )                    # certo
+```
+
+### Por que isso escapou de tudo que eu conferia
+
+O ZIP tinha o conteúdo certo, as DLLs certas, o `sha256sum` batia, e o guard contra
+DLL de terceiro passava. Todas as verificações olhavam **o que havia dentro** do
+pacote. Nenhuma olhava **onde**. Um caminho errado por um nível de pasta é invisível
+para quem confere lista de arquivos e não confere a raiz.
+
+### O que o log provou, e nenhuma leitura de código provaria
+
+O sintoma decisivo não era um erro — era a **ausência** dele. O `LogOutput.log` não
+tinha uma linha do mod, nem mesmo o `Loading [...]` que o chainloader do BepInEx
+escreve **antes** de qualquer código nosso rodar. Isso separa três mundos que a
+leitura de código não separa:
+
+- há `Loading` e há exceção → o código rodou e quebrou;
+- há `Loading` e não há exceção → carregou e o defeito é de lógica (era aí que eu
+  estava procurando);
+- **não há `Loading`** → o carregador nunca viu o assembly. É um problema de
+  *instalação*, e nenhuma quantidade de leitura de código chega nele.
+
+### A regra
+
+**Ausência de log é evidência, e é a primeira a ser lida.** Antes de diagnosticar
+comportamento, confirmar que o mod carregou. E: **abrir o próprio artefato antes de
+entregá-lo** — o `empacotar.sh` agora exige `BepInEx/plugins/` na raiz do ZIP e
+recusa publicar se a pasta de topo voltar.
+
 ## 4. O que a ponte ainda não cobre
 
 | Pendente | Por quê |
