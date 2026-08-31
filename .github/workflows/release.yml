@@ -1,0 +1,101 @@
+name: Release
+
+# Uma release por pacote. A tag diz qual:
+#   core-v0.1.0  ·  scannerroom-v0.1.0  ·  alterrahub-v1.0.3
+#
+# Existe porque as releases precisam sair do GitHub, e nao da maquina de quem
+# desenvolve: o build fica reproduzivel e ninguem precisa ter as refs locais.
+on:
+  push:
+    tags: ['core-v*', 'scannerroom-v*', 'alterrahub-v*']
+  workflow_dispatch:
+    inputs:
+      pacote:
+        description: 'Pacote a empacotar (sem publicar release)'
+        required: true
+        default: todos
+        type: choice
+        options: [todos, core, scannerroom, alterrahub]
+
+permissions:
+  contents: write   # necessario para criar a release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Descobrir o pacote a partir da tag
+        id: alvo
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "pacote=${{ inputs.pacote }}" >> "$GITHUB_OUTPUT"
+            echo "publicar=nao" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          tag="${GITHUB_REF_NAME}"
+          case "$tag" in
+            core-v*)        echo "pacote=core"        >> "$GITHUB_OUTPUT" ;;
+            scannerroom-v*) echo "pacote=scannerroom" >> "$GITHUB_OUTPUT" ;;
+            alterrahub-v*)  echo "pacote=alterrahub"  >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::Tag '$tag' nao corresponde a nenhum pacote."; exit 1 ;;
+          esac
+          echo "publicar=sim" >> "$GITHUB_OUTPUT"
+
+      # Estas DLLs sao de terceiros e por isso NAO ficam no repositorio. Sao baixadas
+      # aqui so como referencia de COMPILACAO — nenhuma entra nos ZIPs publicados
+      # (o empacotar.sh recusa o build se alguma aparecer no pacote).
+      - name: Baixar as referencias de compilacao
+        run: |
+          set -euo pipefail
+          mkdir -p refs
+
+          echo "→ Nautilus (GPL-3.0, SubnauticaModding)"
+          gh release download --repo SubnauticaModding/Nautilus \
+            --pattern '*.zip' --dir /tmp/nautilus --clobber
+          unzip -o -q /tmp/nautilus/*.zip -d /tmp/nautilus/x
+          found=$(find /tmp/nautilus/x -name 'Nautilus.dll' | head -1)
+          [ -n "$found" ] || { echo "::error::Nautilus.dll nao encontrado no release."; exit 1; }
+          cp "$found" refs/Nautilus.dll
+
+          # MoreCyclopsUpgrades e NAudio: o proprio repositorio do FCS (MIT) os versiona.
+          echo "→ MoreCyclopsUpgrades e NAudio (do repo do FCS)"
+          base='https://raw.githubusercontent.com/ccgould/FCStudios_SubnauticaMods/4275d847de6e0f24c711b4b2a9f4308c10ea8248/Libs'
+          curl -sSfL "$base/SN_Exp/MoreCyclopsUpgrades.dll" -o refs/MoreCyclopsUpgrades.dll
+          curl -sSfL "$base/SN_Stable/NAudio.dll"           -o refs/NAudio.dll
+
+          ls -la refs/
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Empacotar
+        run: |
+          chmod +x build/empacotar.sh
+          ./build/empacotar.sh "${{ steps.alvo.outputs.pacote }}"
+          ls -la dist/*.zip
+
+      - name: Publicar a release
+        if: steps.alvo.outputs.publicar == 'sim'
+        run: |
+          set -euo pipefail
+          # O LEIA-ME do pacote e o corpo da release: uma fonte so, sem divergir.
+          leiame=$(find dist -maxdepth 2 -name 'LEIA-ME.md' | head -1)
+          gh release create "${GITHUB_REF_NAME}" dist/*.zip \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file "$leiame" \
+            --prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Guardar os ZIPs como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: pacotes-${{ steps.alvo.outputs.pacote }}
+          path: dist/*.zip
+          if-no-files-found: error
