@@ -11,11 +11,16 @@ on:
   workflow_dispatch:
     inputs:
       pacote:
-        description: 'Pacote a empacotar (sem publicar release)'
+        description: 'Qual pacote'
         required: true
-        default: todos
+        default: alterrahub
         type: choice
-        options: [todos, core, scannerroom, alterrahub]
+        options: [core, scannerroom, alterrahub]
+      publicar:
+        description: 'Publicar a release (a tag e criada a partir da versao do pacote)'
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: write   # necessario para criar a release
@@ -34,11 +39,27 @@ jobs:
         id: alvo
         run: |
           set -euo pipefail
+          # A versao mora numa fonte so — o csproj / UnhingedInfo do pacote — para a
+          # tag nunca discordar do que esta dentro do ZIP.
+          versao_de() {
+            case "$1" in
+              core)        grep -oP '(?<=Version = ")[^"]+' src/Unhinged.Core/UnhingedInfo.cs ;;
+              scannerroom) grep -oP '(?<=<Version>)[^<]+' src/mods/ScannerRoom/ScannerRoom.csproj ;;
+              alterrahub)  grep -oP '(?<=<Version>)[^<]+' src/mods/AlterraHub/AlterraHub.csproj ;;
+            esac
+          }
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "pacote=${{ inputs.pacote }}" >> "$GITHUB_OUTPUT"
-            echo "publicar=nao" >> "$GITHUB_OUTPUT"
+            pacote="${{ inputs.pacote }}"
+            tag="${pacote}-v$(versao_de "$pacote")"
+            echo "pacote=$pacote" >> "$GITHUB_OUTPUT"
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+            [ "${{ inputs.publicar }}" = "true" ] \
+              && echo "publicar=sim" >> "$GITHUB_OUTPUT" \
+              || echo "publicar=nao" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+
           tag="${GITHUB_REF_NAME}"
           case "$tag" in
             core-v*)        echo "pacote=core"        >> "$GITHUB_OUTPUT" ;;
@@ -46,6 +67,7 @@ jobs:
             alterrahub-v*)  echo "pacote=alterrahub"  >> "$GITHUB_OUTPUT" ;;
             *) echo "::error::Tag '$tag' nao corresponde a nenhum pacote."; exit 1 ;;
           esac
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "publicar=sim" >> "$GITHUB_OUTPUT"
 
       # Estas DLLs sao de terceiros e por isso NAO ficam no repositorio. Sao baixadas
@@ -86,10 +108,19 @@ jobs:
           set -euo pipefail
           # O LEIA-ME do pacote e o corpo da release: uma fonte so, sem divergir.
           leiame=$(find dist -maxdepth 2 -name 'LEIA-ME.md' | head -1)
-          gh release create "${GITHUB_REF_NAME}" dist/*.zip \
-            --title "${GITHUB_REF_NAME}" \
-            --notes-file "$leiame" \
-            --prerelease
+          tag='${{ steps.alvo.outputs.tag }}'
+
+          # Rodar de novo a mesma versao nao pode falhar o job: substitui os arquivos da
+          # release existente em vez de estourar em "tag ja existe".
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/*.zip --clobber
+          else
+            gh release create "$tag" dist/*.zip \
+              --target "${GITHUB_SHA}" \
+              --title "$tag" \
+              --notes-file "$leiame" \
+              --prerelease
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
 
