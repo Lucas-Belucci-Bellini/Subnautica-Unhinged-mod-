@@ -22,7 +22,23 @@ internal static class Program
 
         var arquivos = new List<string> { alvo };
         foreach (var pasta in pastas)
-            arquivos.AddRange(Directory.GetFiles(pasta, "*.dll", SearchOption.AllDirectories));
+        {
+            // Pasta que nao existe ou nao da para ler vira aviso, nao stack trace:
+            // um caminho errado de cache do NuGet nao deve parecer defeito do mod.
+            try
+            {
+                if (!Directory.Exists(pasta))
+                {
+                    Console.Error.WriteLine($"aviso: '{pasta}' nao existe — ignorada.");
+                    continue;
+                }
+                arquivos.AddRange(Directory.GetFiles(pasta, "*.dll", SearchOption.AllDirectories));
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+            {
+                Console.Error.WriteLine($"aviso: '{pasta}' ilegivel ({ex.GetType().Name}) — ignorada.");
+            }
+        }
 
         // Um mesmo nome simples pode aparecer em varias pastas; a primeira vence.
         var porNome = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
