@@ -53,6 +53,23 @@ internal static class Program
 
         var asm = ctx.LoadFromAssemblyPath(alvo);
 
+        // ⚠️ Um portao que passa VAZIO e pior que portao nenhum. Se as assemblies do
+        // jogo sumirem, todo alvo resolve para null, cai em "indeterminado" e o
+        // processo sairia 0 — dando verde sem ter conferido nada. Entao: exigir que
+        // a Assembly-CSharp esteja carregada e reconhecivel antes de qualquer coisa.
+        try
+        {
+            var jogo = ctx.LoadFromAssemblyName("Assembly-CSharp");
+            if (jogo.GetType("Player") == null)
+                throw new InvalidOperationException("Assembly-CSharp carregada mas sem o tipo Player");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"::error::Assembly-CSharp do jogo nao utilizavel: {ex.Message}");
+            Console.Error.WriteLine("Sem ela nada e conferido de verdade. Verifique o cache do NuGet.");
+            return 3;
+        }
+
         // Modo membro: confere alvos imperativos (AccessTools.Method/Field), que nao
         // tem atributo nenhum e por isso escapam da varredura de [HarmonyPatch].
         // Uso: MEMBROS="Tipo::Membro,Tipo::Membro" — resolve nas assemblies do jogo.
@@ -168,7 +185,15 @@ internal static class Program
             Console.WriteLine("\n=== INDETERMINADOS (conferir a mao) ===");
             foreach (var q in indefinidos.OrderBy(x => x).Take(40)) Console.WriteLine("  " + q);
         }
-        return quebrados.Count == 0 ? 0 : 1;
+        // Zero patch examinado significa que a varredura nao funcionou, nao que o
+        // pacote esta limpo. E "indeterminado" e uma pergunta sem resposta: num
+        // portao, isso reprova ate alguem olhar.
+        if (achados.Count == 0)
+        {
+            Console.Error.WriteLine("::error::nenhum patch examinado — a varredura nao funcionou.");
+            return 3;
+        }
+        return quebrados.Count == 0 && indefinidos.Count == 0 ? 0 : 1;
     }
 
     private const BindingFlags TodosOsFlags =
