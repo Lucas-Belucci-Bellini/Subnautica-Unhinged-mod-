@@ -39,7 +39,27 @@ empacotar() {
   intrusos=$(find "$pkg" -name '*.dll' ! -name 'Unhinged.*.dll' -print)
   [ -z "$intrusos" ] || { echo "ERRO: DLL de terceiro no pacote:"; echo "$intrusos"; exit 1; }
 
-  ( cd dist && zip -r -q "$nome-v$versao.zip" "$nome-v$versao" )
+  # ⚠️ O ZIP e compactado DE DENTRO de $pkg, e nao de dist/ com a pasta como
+  # argumento. A diferenca decide se o mod carrega:
+  #
+  #   errado:  AlterraHub-v1.0.6/BepInEx/plugins/...   (raiz = a pasta do pacote)
+  #   certo:   BepInEx/plugins/...                     (raiz = BepInEx)
+  #
+  # Quem extrai na pasta do Subnautica com o layout errado termina com
+  # `Subnautica/AlterraHub-v1.0.6/BepInEx/plugins/`, que o BepInEx nunca varre —
+  # o jogo abre normal, nenhum erro aparece, e o mod simplesmente nao existe.
+  # Nem uma linha no LogOutput.log, porque nem o chainloader chega a ve-lo.
+  # Foi exatamente esse o defeito da v1.0.6. O Vortex tambem so reconhece o
+  # pacote com BepInEx/ na raiz.
+  ( cd "$pkg" && zip -r -q "$RAIZ/$pkg.zip" . )
+
+  # Conferir o artefato, e nao a intencao: se a raiz do ZIP nao for BepInEx/,
+  # o pacote esta quebrado do mesmo jeito que a v1.0.6 estava.
+  unzip -l "$pkg.zip" | grep -q ' BepInEx/plugins/' \
+    || { echo "ERRO: $pkg.zip nao tem BepInEx/plugins/ na raiz."; exit 1; }
+  ! unzip -l "$pkg.zip" | grep -qE " $nome-v$versao/" \
+    || { echo "ERRO: $pkg.zip embrulhou tudo numa pasta de topo."; exit 1; }
+
   echo "   $pkg.zip"
   sha256sum "$pkg.zip"
 }

@@ -1,4 +1,20 @@
-# Alterra Hub — suíte FCStudios portada · v1.0.2
+# Alterra Hub — suíte FCStudios portada · v1.0.7
+
+## 🔴 Se você tem a v1.0.6 ou anterior, ela nunca carregou — e o defeito era do ZIP
+
+O ZIP até a v1.0.6 embrulhava tudo numa pasta de topo (`AlterraHub-v1.0.6/`), então a
+raiz do arquivo era essa pasta e não `BepInEx/`. Quem extraiu na pasta do Subnautica
+terminou com `Subnautica\AlterraHub-v1.0.6\BepInEx\plugins\` — um caminho que o
+BepInEx **não varre**. O jogo abre normal, nenhum erro aparece, nada quebra: o mod
+simplesmente não existe para o carregador.
+
+É por isso que o `LogOutput.log` não tinha **uma linha sequer** do mod, nem mesmo o
+`Loading [...]` que o próprio BepInEx escreve antes de qualquer código nosso rodar. E é
+por isso que o Vortex "instalou mas não reconheceu": não havia `BepInEx/` na raiz para
+ele reconhecer.
+
+Na v1.0.7 a raiz do ZIP é `BepInEx/`, como manda o formato. O empacotador agora
+**confere o próprio ZIP** e recusa publicar se a pasta de topo voltar.
 
 Os **7 módulos do FCStudios num pacote só**: Alterra Hub, Energy, Home, Life Support,
 Production, Storage e Cyclops Upgrade Console. Escritos por **Field Creator Studios**
@@ -85,10 +101,12 @@ Agora cada módulo aplica só os patches do próprio namespace.
 Junto: três caminhos de asset que escaparam da correção da v1.0.3 — o carregador de
 bundles (`FCSAssetBundlesService`) procurava num caminho e a documentação dizia outro.
 
-## ⛔ NÃO instale pelo Vortex
+## ⚠️ Prefira instalar à mão, mesmo agora
 
-O Vortex não conhece este formato: ele aceita o ZIP, mas não sabe onde cada arquivo vai.
-**Instalação é manual**, e o layout abaixo é o que importa.
+Da v1.0.7 em diante o ZIP tem `BepInEx/` na raiz, que é o formato que o Vortex entende —
+então ele tem chance de acertar, ao contrário das versões anteriores. Mesmo assim, os
+**assets do FCS** (a seção acima) continuam sendo cópia manual, e o Vortex não sabe nada
+sobre eles. Instalar à mão é o caminho em que dá para conferir cada passo.
 
 ## ⛔ Não conviva com QModManager / SMLHelper
 
