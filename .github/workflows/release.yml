@@ -128,6 +128,18 @@ jobs:
           ./build/empacotar.sh "${{ steps.alvo.outputs.pacote }}"
           ls -la dist/*.zip
 
+      # Compilar nao prova que um patch encontra o alvo: o Harmony resolve por NOME,
+      # em runtime. Metodo renomeado numa atualizacao do jogo compila liso e derruba
+      # o modulo inteiro no carregamento. Aqui isso vira erro de build.
+      - name: Conferir os alvos de Harmony contra as assemblies do jogo
+        if: steps.alvo.outputs.pacote == 'alterrahub'
+        run: |
+          set -euo pipefail
+          dotnet build tools/VerificarPatches -c Release -v q --nologo
+          ./tools/VerificarPatches/rodar.sh
+          MEMBROS="ConstructorInput::OnCraftingBegin,BaseBioReactor::charge" \
+            ./tools/VerificarPatches/rodar.sh
+
       - name: Publicar a release
         if: steps.alvo.outputs.publicar == 'sim'
         run: |

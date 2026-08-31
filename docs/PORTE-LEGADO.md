@@ -394,6 +394,72 @@ comportamento, confirmar que o mod carregou. E: **abrir o próprio artefato ante
 entregá-lo** — o `empacotar.sh` agora exige `BepInEx/plugins/` na raiz do ZIP e
 recusa publicar se a pasta de topo voltar.
 
+## 3.9 Os alvos de Harmony contra o jogo atual: 68 conferidos, 0 quebrados
+
+Compilar não prova que um patch funciona. O Harmony resolve o alvo **por nome, em
+runtime** — `[HarmonyPatch(typeof(Builder), "UpdateAllowed")]` é string e reflexão, não
+chamada. Método renomeado desde 2022 compila liso e derruba o módulo inteiro no
+carregamento. Como o FCS é de **agosto de 2022** (upstream morto: `4275d84` é o topo do
+`master`, confirmado por `ls-remote`) e o jogo está na build **82304**, essa era a
+falha de runtime mais provável.
+
+`tools/VerificarPatches` mede isso: lê os atributos do **assembly compilado** (no fonte,
+`typeof` e `nameof` ainda são texto) e resolve cada alvo nas assemblies reais do jogo,
+via `MetadataLoadContext` — sem executar nada.
+
+| | |
+| --- | --- |
+| patches por atributo | **66**, todos resolvidos |
+| alvos imperativos no jogo | **2**, ambos existem |
+| alvo imperativo de outro mod | 1 (`SubnauticaMap.PingMapIcon.Refresh`) |
+| **alvos inexistentes** | **0** |
+
+Os dois imperativos escapam da varredura por atributo porque não têm atributo nenhum —
+são `AccessTools.Method(typeof(ConstructorInput), "OnCraftingBegin")` e
+`AccessTools.Field(typeof(BaseBioReactor), "charge")`. Ambos falhariam **silenciosamente
+para o compilador** e ruidosamente em jogo: `AccessTools` devolve `null`, e daí
+`harmony.Patch(null, …)` estoura. Conferidos pelo modo `MEMBROS=` do verificador —
+`OnCraftingBegin` existe (método de instância) e `charge` existe (**campo estático**, o
+que valida o `GetValue(tipo)` que o autor escreveu).
+
+O terceiro aponta para o mod **SubnauticaMap**, não para o jogo, e é resolvido por
+`Type.GetType(…, throwOnError: false)` dentro de um `if (type != null)`. Sem aquele mod
+instalado, o trecho é pulado — não é defeito.
+
+### ⚠️ Quarta armadilha de medição, agora do lado do verificador
+
+O verificador **errou duas vezes antes de acertar**, e as duas foram de contagem:
+
+1. **Contou demais (107).** Somava métodos auxiliares soltos dentro de classes com
+   `[HarmonyPatch]` no tipo. O Harmony só patcheia o método anotado com
+   `[HarmonyPrefix]`/`[HarmonyPostfix]`/… ou chamado `Prefix`/`Postfix`/… — auxiliar na
+   mesma classe é ignorado. Aplicada a regra do próprio Harmony, caiu para 66.
+2. **A conciliação contou de menos.** Comparei **nome de arquivo** com **nome de
+   classe** (`EquipmentPatcher.cs` declara `Equipment_GetSlotType_Patch`) e depois
+   quebrei nome de tipo aninhado com `sed 's/.*\.//'` — o formato é `Externa+Interna`,
+   sem ponto. As duas coisas fabricaram "26 classes ausentes do DLL" que estavam todas
+   lá.
+
+A regra que fica é a mesma do §3.7: **quando o número surpreender, suspeite primeiro do
+medidor.** Aqui, as duas conferências que resolveram foram baratas — `strings` no DLL
+procurando o nome exato da classe, e olhar a saída crua em vez do `comm`.
+
+### Roda sozinho
+
+O workflow de release roda o verificador antes de empacotar o Alterra Hub. Se uma
+atualização do jogo renomear um alvo, o build falha — em vez de o jogador descobrir.
+
+```bash
+tools/VerificarPatches/rodar.sh                                    # por atributo
+MEMBROS="Tipo::Membro" tools/VerificarPatches/rodar.sh             # imperativos
+```
+
+### O que isto ainda não diz
+
+Diz que **todo patch encontra o alvo**. Não diz que o patch faz a coisa certa: assinatura
+compatível, campo com o mesmo significado, ordem de execução. E continua sem verificação
+em jogo — este ambiente é Linux, sem Subnautica.
+
 ## 4. O que a ponte ainda não cobre
 
 | Pendente | Por quê |

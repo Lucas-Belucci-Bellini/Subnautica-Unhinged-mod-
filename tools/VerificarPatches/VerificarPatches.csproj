@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Confere que TODO alvo de [HarmonyPatch] do pacote existe nas assemblies reais
+    do jogo. Compilar nao prova isso: o alvo de um patch e resolvido em RUNTIME,
+    por nome. Metodo renomeado desde 2022 compila liso e estoura no carregamento.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <AssemblyName>VerificarPatches</AssemblyName>
+    <RootNamespace>VerificarPatches</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="8.0.0" />
+  </ItemGroup>
+</Project>
