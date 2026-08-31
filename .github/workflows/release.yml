@@ -25,6 +25,12 @@ on:
 permissions:
   contents: write   # necessario para criar a release
 
+env:
+  # Versao do Nautilus que este projeto tem como alvo. Fica aqui em cima porque
+  # e o unico numero de terceiro que o build precisa acertar — quando subir, sobe
+  # nesta linha, e nao no meio de um `gh release download`.
+  NAUTILUS_TAG: '1.0.0-pre.53'
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -81,23 +87,27 @@ jobs:
           echo "→ Nautilus (GPL-3.0, SubnauticaModding)"
           mkdir -p /tmp/nautilus/x
 
-          # Sem --pattern: os nomes dos assets mudam entre releases, e filtrar por '*.zip'
-          # fez o job falhar sem baixar nada. Pega tudo e procura o DLL depois.
-          echo "assets do ultimo release:"
-          gh release view --repo SubnauticaModding/Nautilus --json assets \
-            --jq '.assets[].name' || true
-          gh release download --repo SubnauticaModding/Nautilus \
-            --dir /tmp/nautilus --clobber
+          # ⚠️ A TAG E OBRIGATORIA. TODO release 1.x do Nautilus e marcado como
+          # PRE-RELEASE, e `gh release ... latest` ignora pre-release: ele caia no
+          # release antigo do SMLHelper 2.15 (o repositorio foi renomeado de
+          # SMLHelper para Nautilus e o release velho continua la como o unico
+          # "latest" estavel). Sem tag, o download nunca traria o Nautilus.
+          # Esta e a mesma versao que o projeto tem como alvo.
+          echo "assets de $NAUTILUS_TAG:"
+          gh release view "$NAUTILUS_TAG" --repo SubnauticaModding/Nautilus \
+            --json assets --jq '.assets[].name' || true
+          gh release download "$NAUTILUS_TAG" --repo SubnauticaModding/Nautilus \
+            --pattern '*' --dir /tmp/nautilus --clobber
 
           # O DLL pode vir solto ou dentro de um arquivo compactado.
-          for arquivo in /tmp/nautilus/*.zip; do
+          for arquivo in /tmp/nautilus/*.zip /tmp/nautilus/*.7z; do
             [ -e "$arquivo" ] && unzip -o -q "$arquivo" -d /tmp/nautilus/x || true
           done
 
           found=$(find /tmp/nautilus -name 'Nautilus.dll' | head -1)
           if [ -z "$found" ]; then
-            echo "::error::Nautilus.dll nao encontrado. Baixado:"
-            find /tmp/nautilus -maxdepth 2 -type f -printf '  %p\n'
+            echo "::error::Nautilus.dll nao encontrado em $NAUTILUS_TAG. Baixado:"
+            find /tmp/nautilus -maxdepth 3 -type f -printf '  %p\n'
             exit 1
           fi
           cp "$found" refs/Nautilus.dll
