@@ -52,6 +52,23 @@ execução seguem **inteiramente não verificados**.
 
 Trate como **build experimental**, não como release jogável. **Faça backup do save.**
 
+## v1.0.6 — o motivo de nada aparecer no blueprint nem no construtor
+
+**Todo item estava sendo registrado BLOQUEADO.**
+
+O `unlockAtStart` do Nautilus tem padrão **`false`**; o do SMLHelper era **`true`**. A
+ponte chamava a sobrecarga curta de `PrefabInfo.WithTechType`, então herdava o `false`
+do Nautilus — enquanto o código do FCS conta com o `true` do SMLHelper e só sobrescreve
+nos poucos itens que devem ser descobertos por escaneamento.
+
+Resultado: os itens existiam como TechType, mas ficavam trancados. Não apareciam no PDA
+nem na ferramenta de construção. Era exatamente isso.
+
+A ponte também **declarava** `UnlockedAtStart` e **nunca o usava** — as classes do FCS
+sobrescreviam a propriedade e a intenção era descartada no caminho. Agora ela chega ao
+Nautilus, e `RequiredForUnlock` tem precedência quando existe (exigir escaneamento e
+nascer liberado são coisas contraditórias).
+
 ## O que a v1.0.5 conserta (leia se a v1.0.2/1.0.3 quebrou seu jogo)
 
 **Cada patch do FCS estava sendo aplicado 7 vezes.** Cada módulo chamava

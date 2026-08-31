@@ -28,8 +28,12 @@ namespace SMLHelper.V2.Assets
         /// <summary>Tamanho ocupado no inventário.</summary>
         public virtual Vector2int SizeInInventory => new Vector2int(1, 1);
 
-        /// <summary>Se a receita já nasce liberada. Sobrescrito por 6 classes do FCS.</summary>
-        public virtual bool UnlockedAtStart => true;
+        /// <summary>
+        /// Se a receita já nasce liberada. <c>true</c> era o padrão do SMLHelper, e o
+        /// código legado conta com ele: só sobrescreve quando o item deve ser
+        /// descoberto por escaneamento.
+        /// </summary>
+        public override bool UnlockedAtStart => true;
 
         /// <summary>Dados de entidade de mundo, para spawn. Nulo = não spawna sozinho.</summary>
         public virtual UWE.WorldEntityInfo EntityInfo => null;
@@ -70,6 +74,14 @@ namespace SMLHelper.V2.Assets
         /// Traduz os membros acima para os gadgets do Nautilus. É o ponto onde a API
         /// por herança do SMLHelper vira a API por composição do Nautilus.
         /// </summary>
+        /// <summary>
+        /// Exigir tecnologia para liberar e nascer liberado se contradizem. Quando há
+        /// <see cref="RequiredForUnlock"/>, é ele que manda — senão o item apareceria
+        /// no PDA desde o começo e a exigência não valeria nada.
+        /// </summary>
+        protected override bool ResolverLiberadoNoInicio()
+            => RequiredForUnlock == TechType.None && UnlockedAtStart;
+
         protected override void ConfigurePrefab(CustomPrefab prefab)
         {
             base.ConfigurePrefab(prefab);

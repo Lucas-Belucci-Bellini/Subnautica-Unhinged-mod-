@@ -64,7 +64,12 @@ namespace SMLHelper.V2.Assets
         {
             OnStartedPatching?.Invoke();
 
-            var info = PrefabInfo.WithTechType(ClassID, FriendlyName, Description);
+            // ⚠️ `unlockAtStart` do Nautilus tem padrao **false**; o do SMLHelper era
+            // **true**. Chamar a sobrecarga curta registrava TODO item bloqueado — ele
+            // existia como TechType mas nao aparecia nem no blueprint nem no construtor.
+            // Passar explicitamente e o que reconcilia as duas convencoes.
+            var info = PrefabInfo.WithTechType(
+                ClassID, FriendlyName, Description, unlockAtStart: ResolverLiberadoNoInicio());
             if (!string.IsNullOrEmpty(PrefabFileName))
                 info = info.WithFileName(PrefabFileName);
 
@@ -89,6 +94,21 @@ namespace SMLHelper.V2.Assets
         /// antes do registro. Vazio nesta base: um prefab puro não tem receita.
         /// </summary>
         protected virtual void ConfigurePrefab(CustomPrefab prefab) { }
+
+        /// <summary>
+        /// Se a receita já nasce liberada. <c>false</c> nesta base — um prefab puro não
+        /// tem receita para liberar. O <see cref="SMLHelper.V2.Assets.Spawnable"/>
+        /// sobrescreve para <c>true</c>, que era o padrão do SMLHelper.
+        /// </summary>
+        public virtual bool UnlockedAtStart => false;
+
+        /// <summary>
+        /// O valor que de fato vai para o Nautilus. Existe separado de
+        /// <see cref="UnlockedAtStart"/> porque o <c>Craftable</c> precisa cruzar essa
+        /// intenção com o <c>RequiredForUnlock</c>: liberado desde o início e exigir
+        /// tecnologia para liberar são coisas contraditórias.
+        /// </summary>
+        protected virtual bool ResolverLiberadoNoInicio() => UnlockedAtStart;
 
         /// <summary>
         /// Ícone do item. <c>protected</c>, não <c>public</c>: é assim que o SMLHelper o
