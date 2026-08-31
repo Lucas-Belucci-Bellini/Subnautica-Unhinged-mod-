@@ -137,8 +137,12 @@ jobs:
           set -euo pipefail
           dotnet build tools/VerificarPatches -c Release -v q --nologo
           ./tools/VerificarPatches/rodar.sh
-          MEMBROS="ConstructorInput::OnCraftingBegin,BaseBioReactor::charge" \
-            ./tools/VerificarPatches/rodar.sh
+          # Alvos que NAO tem atributo e por isso escapam da varredura acima:
+          #  · os dois imperativos (AccessTools.Method/Field no QPatch e no Mod)
+          #  · os quatro campos privados do Builder buscados por string com
+          #    typeof(Builder).GetField("..."), que devolvem null em silencio e so
+          #    estouram com NRE la na frente, longe da causa.
+          MEMBROS="ConstructorInput::OnCraftingBegin,BaseBioReactor::charge,Builder::ghostModel,Builder::placeLayerMask,Builder::placeMaxDistance,Builder::rotationEnabled" ./tools/VerificarPatches/rodar.sh
 
       - name: Publicar a release
         if: steps.alvo.outputs.publicar == 'sim'

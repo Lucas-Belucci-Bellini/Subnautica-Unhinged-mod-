@@ -454,6 +454,33 @@ tools/VerificarPatches/rodar.sh                                    # por atribut
 MEMBROS="Tipo::Membro" tools/VerificarPatches/rodar.sh             # imperativos
 ```
 
+### A reflexão por string: 4 alvos vivos, e dois achados inertes
+
+Além dos atributos, o FCS busca membros privados do jogo por **string**:
+`typeof(Builder).GetField("ghostModel", …)`. Isso é pior que um patch quebrado,
+porque não falha no carregamento: `GetField` devolve `null` em silêncio e o
+estouro vem depois, num `NullReferenceException` longe da causa.
+
+Vivos (fora de comentário) são **13 sítios**, e só **4 buscas distintas** em tipo
+do jogo — `Builder::ghostModel`, `placeLayerMask`, `placeMaxDistance` e
+`rotationEnabled`. **Os quatro existem** na build 82304, e agora estão no CI junto
+dos dois imperativos.
+
+Outros **33 sítios estão comentados** — código morto que o autor deixou no
+arquivo. ⚠️ Contar linha comentada como código é fácil e eu fiz: a primeira
+medição disse "46 sítios" misturando vivo e morto.
+
+Dois achados que **parecem** defeito e não são:
+
+| achado | veredito |
+| --- | --- |
+| `BuilderTool::constructText` / `deconstructText` **não existem** no jogo atual | inerte — todas as ocorrências estão comentadas, no `Stairs/Patchers/BuilderToolPatcher.cs`, que além disso é um dos 14 `<Compile Remove>` (o autor também não compilava) |
+| `typeof(bool).GetField("shouldPlayIntro")` — **bug real do upstream** (deveria ser `typeof(PDA)`) | inerte — o campo `_shouldPlayIntro` é declarado e **nunca lido**; o único uso está comentado. Como é inicializador `static readonly`, devolver `null` não estoura |
+
+Não "consertei" o `typeof(bool)`: mexer nele mudaria comportamento que hoje não
+existe, e adivinhar o tipo certo é justamente o que este porte não faz. Fica
+registrado para quando alguém quiser reativar aquele trecho.
+
 ### O que isto ainda não diz
 
 Diz que **todo patch encontra o alvo**. Não diz que o patch faz a coisa certa: assinatura
