@@ -16,7 +16,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>Unhinged.AlterraHub</AssemblyName>
     <RootNamespace>FCS_AlterraHub</RootNamespace>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <Description>Suite Alterra Hub (FCStudios) portada para BepInEx 5 + Nautilus.</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>

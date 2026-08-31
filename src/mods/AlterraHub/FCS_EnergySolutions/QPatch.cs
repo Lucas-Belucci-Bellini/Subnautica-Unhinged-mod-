@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using FCS_AlterraHub.Extensions;
 using FCS_AlterraHub.Model.GUI;
@@ -132,7 +132,10 @@ namespace FCS_EnergySolutions
 
             //Harmony
             var harmony = new Harmony("com.energrysolutions.fcstudios");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            // PORTE — `PatchAll(assembly)` varreria o assembly INTEIRO, e os 7 modulos agora
+            // moram num assembly so: os 129 patches do pacote seriam aplicados uma vez
+            // POR MODULO, sete vezes. `PatchModule` aplica so o que e deste namespace.
+            harmony.PatchModule(Assembly.GetExecutingAssembly(), "FCS_EnergySolutions");
 
             var constructorOriginal = AccessTools.Method(typeof(ConstructorInput), "OnCraftingBegin");
             var constructorPrefix = new HarmonyMethod(AccessTools.Method(typeof(ConstructorInput_Patch), "Prefix"));

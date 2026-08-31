@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
@@ -10,7 +10,9 @@ namespace FCS_AlterraHub.Helpers
     /// </summary>
     public static class AssetHelper
     {
-        public static string ModDirLocation => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        // PORTE — idem: subpasta do modulo, nao a pasta do DLL.
+        public static string ModDirLocation =>
+            UnhingedModPaths.ModuleFolder(Assembly.GetExecutingAssembly(), "FCS_AlterraHub");
         /// <summary>
         /// The AssetBundle for the mod
         /// </summary>

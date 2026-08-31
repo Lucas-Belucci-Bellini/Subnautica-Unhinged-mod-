@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using FCS_AlterraHub.Helpers;
@@ -39,7 +39,10 @@ namespace FCS_ProductionSolutions
             
             //Harmony
             var harmony = new Harmony("com.productionsolutions.fcstudios");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            // PORTE — `PatchAll(assembly)` varreria o assembly INTEIRO, e os 7 modulos agora
+            // moram num assembly so: os 129 patches do pacote seriam aplicados uma vez
+            // POR MODULO, sete vezes. `PatchModule` aplica so o que e deste namespace.
+            harmony.PatchModule(Assembly.GetExecutingAssembly(), "FCS_ProductionSolutions");
 
             if (Configuration.IsHydroponicHarvesterEnabled)
             {

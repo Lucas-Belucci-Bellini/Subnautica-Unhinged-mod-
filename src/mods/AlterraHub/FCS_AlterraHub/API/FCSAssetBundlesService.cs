@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using FCS_AlterraHub.Buildables;
@@ -26,7 +26,10 @@ namespace FCS_AlterraHub.API
 
         public static IFcAssetBundlesService PublicAPI { get; } = new FCSAssetBundlesService();
 
-        private static string ExecutingFolder { get; } = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        // PORTE — tem de casar com o `Mod.GetModDirectory()`, senao o bundle e procurado
+        // num caminho e documentado em outro.
+        private static string ExecutingFolder { get; } =
+            UnhingedModPaths.ModuleFolder(Assembly.GetExecutingAssembly(), "FCS_AlterraHub");
 
         private static readonly Dictionary<string, AssetBundle> loadedAssetBundles = new();
         private static readonly Dictionary<string, Sprite> loadedIcons = new();

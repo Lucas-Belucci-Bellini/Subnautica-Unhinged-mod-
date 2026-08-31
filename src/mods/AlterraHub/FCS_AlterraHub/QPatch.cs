@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 using FCS_AlterraHub.API;
@@ -73,7 +73,11 @@ namespace FCS_AlterraHub
             PatchAdditionalStoreItems();
 
             //Run Harmony Patches
-            var harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), "com.alterrahub.fcstudios");
+            // PORTE — `CreateAndPatchAll` varreria o assembly inteiro; ver a nota do
+            // `PatchModule`. Criar a instancia e aplicar so este namespace separa as
+            // duas coisas sem mudar o id do Harmony.
+            var harmony = new Harmony("com.alterrahub.fcstudios");
+            harmony.PatchModule(Assembly.GetExecutingAssembly(), "FCS_AlterraHub");
 
             //Create AlterraHubStation PingType
             var type = Type.GetType("SubnauticaMap.PingMapIcon, SubnauticaMap", false, false);

@@ -52,6 +52,22 @@ execução seguem **inteiramente não verificados**.
 
 Trate como **build experimental**, não como release jogável. **Faça backup do save.**
 
+## O que a v1.0.5 conserta (leia se a v1.0.2/1.0.3 quebrou seu jogo)
+
+**Cada patch do FCS estava sendo aplicado 7 vezes.** Cada módulo chamava
+`harmony.PatchAll(Assembly.GetExecutingAssembly())`. Quando cada um era um DLL próprio,
+isso aplicava só os patches dele — fundidos num assembly só, `PatchAll` passou a varrer
+o pacote **inteiro**, então os 129 patches eram aplicados **uma vez por módulo**.
+
+Não era só desperdício: **36 prefixos e 37 postfixes rodando 7× cada em métodos do jogo**.
+Um prefixo que devolve `false` para pular o original passava a ser avaliado sete vezes.
+É a explicação mais provável para o jogo não carregar.
+
+Agora cada módulo aplica só os patches do próprio namespace.
+
+Junto: três caminhos de asset que escaparam da correção da v1.0.3 — o carregador de
+bundles (`FCSAssetBundlesService`) procurava num caminho e a documentação dizia outro.
+
 ## ⛔ NÃO instale pelo Vortex
 
 O Vortex não conhece este formato: ele aceita o ZIP, mas não sabe onde cada arquivo vai.

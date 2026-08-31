@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -241,7 +241,10 @@ namespace FCS_HomeSolutions
             displayBoard.Patch();
 
             var harmony = new Harmony("com.homesolutions.fstudios"); 
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            // PORTE — `PatchAll(assembly)` varreria o assembly INTEIRO, e os 7 modulos agora
+            // moram num assembly so: os 129 patches do pacote seriam aplicados uma vez
+            // POR MODULO, sete vezes. `PatchModule` aplica so o que e deste namespace.
+            harmony.PatchModule(Assembly.GetExecutingAssembly(), "FCS_HomeSolutions");
             
             PatchToolTipFactory(harmony);
 

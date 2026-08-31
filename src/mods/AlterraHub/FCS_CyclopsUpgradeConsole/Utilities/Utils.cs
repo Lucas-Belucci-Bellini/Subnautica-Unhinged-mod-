@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
@@ -7,7 +7,9 @@ namespace CyclopsUpgradeConsole.Utilities
 {
     internal static class CUCUtils
     {
-        public static string ModDirLocation => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        // PORTE — idem: subpasta do modulo, nao a pasta do DLL.
+        public static string ModDirLocation =>
+            UnhingedModPaths.ModuleFolder(Assembly.GetExecutingAssembly(), "FCS_CyclopsUpgradeConsole");
         public static AssetBundle Asset(string modBundleName)
         {
             if (string.IsNullOrWhiteSpace(ModDirLocation) && string.IsNullOrWhiteSpace(modBundleName))
