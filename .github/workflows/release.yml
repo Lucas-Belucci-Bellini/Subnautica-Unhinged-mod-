@@ -79,11 +79,27 @@ jobs:
           mkdir -p refs
 
           echo "→ Nautilus (GPL-3.0, SubnauticaModding)"
+          mkdir -p /tmp/nautilus/x
+
+          # Sem --pattern: os nomes dos assets mudam entre releases, e filtrar por '*.zip'
+          # fez o job falhar sem baixar nada. Pega tudo e procura o DLL depois.
+          echo "assets do ultimo release:"
+          gh release view --repo SubnauticaModding/Nautilus --json assets \
+            --jq '.assets[].name' || true
           gh release download --repo SubnauticaModding/Nautilus \
-            --pattern '*.zip' --dir /tmp/nautilus --clobber
-          unzip -o -q /tmp/nautilus/*.zip -d /tmp/nautilus/x
-          found=$(find /tmp/nautilus/x -name 'Nautilus.dll' | head -1)
-          [ -n "$found" ] || { echo "::error::Nautilus.dll nao encontrado no release."; exit 1; }
+            --dir /tmp/nautilus --clobber
+
+          # O DLL pode vir solto ou dentro de um arquivo compactado.
+          for arquivo in /tmp/nautilus/*.zip; do
+            [ -e "$arquivo" ] && unzip -o -q "$arquivo" -d /tmp/nautilus/x || true
+          done
+
+          found=$(find /tmp/nautilus -name 'Nautilus.dll' | head -1)
+          if [ -z "$found" ]; then
+            echo "::error::Nautilus.dll nao encontrado. Baixado:"
+            find /tmp/nautilus -maxdepth 2 -type f -printf '  %p\n'
+            exit 1
+          fi
           cp "$found" refs/Nautilus.dll
 
           # MoreCyclopsUpgrades e NAudio: o proprio repositorio do FCS (MIT) os versiona.
