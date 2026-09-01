@@ -40,6 +40,16 @@ manifesto_upstream() {
 manifesto_branch() {
   case "$1" in AlterraHub) echo "master" ;; *) echo "(nao aplicavel)" ;; esac
 }
+# ⚠️ NAO ler do checkout atual. A branch de modernizacao e um fato historico do
+# mod — onde o porte foi feito —, e o build da release roda a partir do `main`,
+# ja depois do merge. Ler `git rev-parse --abbrev-ref HEAD` gravava "main" e
+# apagava justamente a informacao que o campo existe para preservar.
+manifesto_branch_mod() {
+  case "$1" in
+    AlterraHub) echo "feature/fcs-modernization" ;;
+    *)          echo "(sem branch dedicada)" ;;
+  esac
+}
 manifesto_commit() {
   case "$1" in
     AlterraHub) echo "4275d847de6e0f24c711b4b2a9f4308c10ea8248" ;;
@@ -74,7 +84,7 @@ empacotar() {
     echo "Source Repository:    $(manifesto_upstream "$nome")"
     echo "Source Branch:        $(manifesto_branch "$nome")"
     echo "Source Commit:        $(manifesto_commit "$nome")"
-    echo "Modernization Branch: $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')"
+    echo "Modernization Branch: $(manifesto_branch_mod "$nome")"
     echo "Integrated Commit:    $(git rev-parse HEAD 2>/dev/null || echo '?')"
     echo "Subnautica Build:     82304"
     echo "BepInEx:              5.4.21"
