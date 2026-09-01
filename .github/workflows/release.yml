@@ -144,6 +144,12 @@ jobs:
           #    estouram com NRE la na frente, longe da causa.
           MEMBROS="ConstructorInput::OnCraftingBegin,BaseBioReactor::charge,Builder::ghostModel,Builder::placeLayerMask,Builder::placeMaxDistance,Builder::rotationEnabled" ./tools/VerificarPatches/rodar.sh
 
+          # Um interruptor de modulo que nao casa com namespace nenhum e pior que
+          # interruptor nenhum: aparece no .cfg, o jogador desliga, e o modulo carrega
+          # assim mesmo. A lista sai do proprio Plugin.cs, sem duplicar.
+          chmod +x build/conferir-modulos.sh
+          ./build/conferir-modulos.sh
+
       - name: Publicar a release
         if: steps.alvo.outputs.publicar == 'sim'
         run: |
@@ -152,15 +158,46 @@ jobs:
           leiame=$(find dist -maxdepth 2 -name 'LEIA-ME.md' | head -1)
           tag='${{ steps.alvo.outputs.tag }}'
 
+          # Corpo = nivel de verificacao + checksum + o LEIA-ME.
+          #
+          # ⚠️ O nivel de verificacao e a PRIMEIRA coisa da release, e diz a verdade:
+          # este ambiente e Linux sem Subnautica, entao nada foi aberto no jogo. Uma
+          # release que insinua teste que nao houve custa mais caro que uma que admite
+          # o que falta.
+          corpo=$(mktemp)
+          {
+            echo '## Nivel de verificacao'
+            echo
+            echo '**`Build verified`** — compila contra as assemblies reais da build 82304'
+            echo 'e todo alvo de patch foi resolvido por metadata.'
+            echo
+            echo 'NAO foi testado em jogo (`In-game tested`) nem por testes automatizados'
+            echo '(`Automated tests verified`): o ambiente de build e Linux, sem Subnautica.'
+            echo 'Comportamento em jogo, compatibilidade de save, assinatura dos patches e'
+            echo 'carregamento dos asset bundles seguem **sem verificacao**.'
+            echo
+            echo '## SHA256'
+            echo
+            echo '```'
+            ( cd dist && sha256sum *.zip )
+            echo '```'
+            echo
+            echo '---'
+            echo
+            cat "$leiame"
+          } > "$corpo"
+
           # Rodar de novo a mesma versao nao pode falhar o job: substitui os arquivos da
           # release existente em vez de estourar em "tag ja existe".
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" dist/*.zip --clobber
+            # o corpo tambem muda: o checksum acompanha o ZIP novo
+            gh release edit "$tag" --notes-file "$corpo"
           else
             gh release create "$tag" dist/*.zip \
               --target "${GITHUB_SHA}" \
               --title "$tag" \
-              --notes-file "$leiame" \
+              --notes-file "$corpo" \
               --prerelease
           fi
         env:
