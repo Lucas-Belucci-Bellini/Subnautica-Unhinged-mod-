@@ -5,7 +5,7 @@
 **Origem:** https://github.com/ccgould/FCStudios_SubnauticaMods
 **Commit/tag upstream:** `4275d847de6e0f24c711b4b2a9f4308c10ea8248` — *"AlterraHub Mod Suite V1.0.2"*, 19/08/2022
 **Licença upstream:** MIT · `Copyright (c) 2020 Field Creator Studios`
-**Subnautica suportado:** build **82304** — ver [`SUBNAUTICA-TARGET-BUILD.md`](SUBNAUTICA-TARGET-BUILD.md)
+**Subnautica suportado:** build **82304** — ver [`SUBNAUTICA-TARGET-BUILD.md`](../../SUBNAUTICA-TARGET-BUILD.md)
 
 ## ⚠️ Nível de verificação — leia antes de qualquer outra coisa
 
@@ -27,7 +27,7 @@ foi aberto no jogo. O que está provado, e como:
 | **comportamento em jogo** | ❌ **não verificado** | — |
 | **compatibilidade de save** | ❌ **não verificado** | — |
 | **assinatura** dos patches | ❌ **não verificado** | o alvo existe; se um parâmetro mudou de tipo, só o runtime diz |
-| **carregamento dos asset bundles** | ❌ **não verificado** | os bundles não são nossos — ver [`FCS-ASSET-MIGRATION.md`](FCS-ASSET-MIGRATION.md) |
+| **carregamento dos asset bundles** | ❌ **não verificado** | os bundles não são nossos — ver [`FCS-ASSET-MIGRATION.md`](ASSETS.md) |
 
 ## Módulos portados
 
@@ -67,11 +67,11 @@ diagnósticos seguidos saíram de leitura de código e erraram a causa. Quem
 respondeu foi o log do jogo — pela **ausência** de qualquer linha nossa, inclusive
 do `Loading [...]` que o BepInEx escreve antes de qualquer código nosso rodar.
 
-Está registrado em [`PORTE-LEGADO.md`](PORTE-LEGADO.md) §3.8.
+Está registrado em [`PORTE-LEGADO.md`](../../PORTE-LEGADO.md) §3.8.
 
 ## Funcionalidades não portadas
 
-Marcadas, não apagadas. Detalhe em [`FCS-UPSTREAM-AUDIT.md`](FCS-UPSTREAM-AUDIT.md) §7.
+Marcadas, não apagadas. Detalhe em [`FCS-UPSTREAM-AUDIT.md`](AUDIT.md) §7.
 
 | marcador | o quê |
 | --- | --- |

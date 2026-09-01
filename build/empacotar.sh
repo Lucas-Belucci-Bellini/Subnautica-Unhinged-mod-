@@ -14,6 +14,39 @@ cd "$RAIZ"
 : "${NautilusDll:=$RAIZ/refs/Nautilus.dll}"
 [ -f "$NautilusDll" ] || { echo "ERRO: Nautilus.dll nao encontrado em $NautilusDll (ver refs/README.md)"; exit 1; }
 
+# Metadados por pacote para o BUILD-MANIFEST. Um mod incorporado carrega a
+# proveniencia do upstream dele; o que e codigo nosso diz isso, em vez de fingir
+# um upstream que nao existe.
+manifesto_mod() {
+  case "$1" in
+    AlterraHub)  echo "FC Studios" ;;
+    ScannerRoom) echo "(codigo proprio do Unhinged)" ;;
+    *)           echo "(codigo proprio do Unhinged)" ;;
+  esac
+}
+manifesto_tag() {
+  case "$1" in
+    AlterraHub)  echo "fcs-v$2" ;;
+    ScannerRoom) echo "scannerroom-v$2" ;;
+    *)           echo "core-v$2" ;;
+  esac
+}
+manifesto_upstream() {
+  case "$1" in
+    AlterraHub) echo "https://github.com/ccgould/FCStudios_SubnauticaMods" ;;
+    *)          echo "(nao aplicavel)" ;;
+  esac
+}
+manifesto_branch() {
+  case "$1" in AlterraHub) echo "master" ;; *) echo "(nao aplicavel)" ;; esac
+}
+manifesto_commit() {
+  case "$1" in
+    AlterraHub) echo "4275d847de6e0f24c711b4b2a9f4308c10ea8248" ;;
+    *)          echo "(nao aplicavel)" ;;
+  esac
+}
+
 # Cada pacote e uma pasta propria em BepInEx/plugins/, com sua versao e seu ZIP.
 # É o que permite lancar um mod sem esperar o outro.
 empacotar() {
@@ -30,6 +63,26 @@ empacotar() {
   mkdir -p "$plugins"
   for d in "${dlls[@]}"; do cp "$d" "$plugins/"; done
   cp LICENSE CREDITOS.md "$pkg/"
+
+  # BUILD-MANIFEST: responde "de onde veio este ZIP?" meses depois, sem depender
+  # da memoria de ninguem. Vai DENTRO do pacote e tambem sai solto como asset.
+  {
+    echo "Project:              Subnautica Unhinged"
+    echo "Integrated Mod:       $(manifesto_mod "$nome")"
+    echo "Release:              $versao"
+    echo "Tag:                  $(manifesto_tag "$nome" "$versao")"
+    echo "Source Repository:    $(manifesto_upstream "$nome")"
+    echo "Source Branch:        $(manifesto_branch "$nome")"
+    echo "Source Commit:        $(manifesto_commit "$nome")"
+    echo "Modernization Branch: $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')"
+    echo "Integrated Commit:    $(git rev-parse HEAD 2>/dev/null || echo '?')"
+    echo "Subnautica Build:     82304"
+    echo "BepInEx:              5.4.21"
+    echo "Nautilus:             1.0.0-pre.53"
+    echo "Build Configuration:  Release"
+    echo "Build Date:           $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+    echo "Verification Level:   Build verified (NAO testado em jogo)"
+  } > "$pkg/BUILD-MANIFEST.txt"
   cp "$leiame" "$pkg/LEIA-ME.md"
   [ -f "src/mods/$nome/LICENSE-FCS.txt" ] && cp "src/mods/$nome/LICENSE-FCS.txt" "$pkg/"
 
@@ -60,12 +113,21 @@ empacotar() {
   ! unzip -l "$pkg.zip" | grep -qE " $nome-v$versao/" \
     || { echo "ERRO: $pkg.zip embrulhou tudo numa pasta de topo."; exit 1; }
 
+  # O manifesto tambem sai SOLTO, para poder ir como asset da release sem que
+  # ninguem precise abrir o ZIP para saber de onde ele veio.
+  cp "$pkg/BUILD-MANIFEST.txt" "dist/BUILD-MANIFEST-$nome.txt"
+  GERADOS+=("$nome-v$versao.zip")
+
   echo "   $pkg.zip"
   sha256sum "$pkg.zip"
 }
 
 ALVO="${1:-todos}"
 mkdir -p dist
+# So os ZIPs desta execucao entram no SHA256SUMS. `dist/` pode ter sobra de
+# build anterior, e um checksum que lista artefato de outra build engana quem
+# for conferir.
+GERADOS=()
 
 if [ "$ALVO" = "todos" ] || [ "$ALVO" = "core" ]; then
   V=$(grep -oP '(?<=Version = ")[^"]+' src/Unhinged.Core/UnhingedInfo.cs)
@@ -88,4 +150,15 @@ if [ "$ALVO" = "todos" ] || [ "$ALVO" = "alterrahub" ]; then
   empacotar "AlterraHub" "src/mods/AlterraHub/AlterraHub.csproj" "$V" "src/mods/AlterraHub/LEIA-ME-RELEASE.md" \
     artifacts/AlterraHub/Release/Unhinged.AlterraHub.dll \
     artifacts/AlterraHub/Release/Unhinged.Legacy.dll
+fi
+
+# SHA256SUMS: arquivo proprio, no formato que `sha256sum -c` le de volta. Sai
+# como asset da release — checksum no meio de um texto ninguem confere.
+if [ ${#GERADOS[@]} -eq 0 ]; then
+  echo "nenhum pacote gerado — SHA256SUMS nao escrito"
+else
+  ( cd dist && sha256sum "${GERADOS[@]}" > SHA256SUMS )
+  echo
+  echo "→ dist/SHA256SUMS (${#GERADOS[@]} pacote(s) desta execucao)"
+  sed 's/^/   /' dist/SHA256SUMS
 fi

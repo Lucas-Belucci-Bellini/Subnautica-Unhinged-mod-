@@ -1,14 +1,18 @@
-# Proveniência do upstream
+# FC Studios — proveniência do upstream
 
 ```text
-Repository:          https://github.com/ccgould/FCStudios_SubnauticaMods
-Branch:              master
-Commit:              4275d847de6e0f24c711b4b2a9f4308c10ea8248
-Mensagem do commit:  "AlterraHub Mod Suite V1.0.2"
-Data do commit:      2022-08-19
+Nome:                FC Studios Subnautica Mods
+Upstream:            https://github.com/ccgould/FCStudios_SubnauticaMods.git
+Branch upstream:     master
+Commit utilizado:    4275d847de6e0f24c711b4b2a9f4308c10ea8248
 Data da importação:  2026-08-30
-Licença:             MIT — Copyright (c) 2020 Field Creator Studios
+Target Subnautica:   82304
+Target BepInEx:      5.4.21
+Target Nautilus:     1.0.0-pre.53
 ```
+
+Mensagem do commit upstream: *"AlterraHub Mod Suite V1.0.2"* · data do commit:
+**2022-08-19** · licença: **MIT**, `Copyright (c) 2020 Field Creator Studios`.
 
 **Nunca `latest`.** O commit acima está fixado em três lugares, e os três têm de
 concordar:
@@ -42,4 +46,4 @@ Importação em dois commits separados de propósito:
 
 Separar os dois é o que permite responder "o que foi alterado desde o upstream?"
 com um `diff`, em vez de com memória. A resposta está em
-[`FCS-REGRESSION.md`](FCS-REGRESSION.md): **128 de 657 arquivos**.
+[`FCS-REGRESSION.md`](TESTS.md#2-teste-de-regressão--fcs-original--fcs-modernizado): **128 de 657 arquivos**.
