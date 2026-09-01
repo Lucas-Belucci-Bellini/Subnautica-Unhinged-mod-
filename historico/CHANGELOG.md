@@ -1,5 +1,35 @@
 # Changelog — Subnautica Unhinged
 
+## [AlterraHub 1.1.0] — 2026-09-01 — configuração central e as auditorias
+
+### Adicionado
+- **Um interruptor por módulo**, num mecanismo só (`Config.Bind` do BepInEx):
+  `EnableFCS` + `EnableAlterraHub`, `EnableEnergy`, `EnableHome`, `EnableLifeSupport`,
+  `EnableProduction`, `EnableStorage`, `EnableCyclops`. Desligar a base com
+  dependentes ligados **não carrega nada** e diz por quê.
+- **`docs/SUBNAUTICA-TARGET-BUILD.md`** — a build-alvo medida (82304), com a
+  evidência de cada número e os símbolos de compilação que decidem o porte.
+- **`docs/FCS-UPSTREAM-AUDIT.md`** — 667 arquivos, 99.173 linhas, uso de API legada
+  medido, os 14 `<Compile Remove>` conferidos contra os `.csproj` do autor, e a
+  matriz legado→moderno.
+- **`docs/FCS-ASSET-MIGRATION.md`** — auditoria de assets: **não há asset para
+  migrar**; as 19 DLLs do upstream são todas framework de terceiros.
+- **`docs/FCS-MODERNIZATION.md`** — o que foi portado, o que não foi e por quê.
+- **`build/conferir-modulos.sh`** — reprova o build se um interruptor não casar com
+  um `[QModCore]` real.
+- **SHA256 e nível de verificação** no corpo da release.
+
+### Corrigido
+- **`EnableCyclops` teria sido um interruptor morto.** O `namespace` do módulo é
+  `CyclopsUpgradeConsole`, **sem** o prefixo `FCS_` que a pasta tem. Eu usei o nome
+  da pasta: a chave apareceria no `.cfg`, o jogador desligaria, e o módulo
+  carregaria assim mesmo. Pego pelo portão novo antes de publicar.
+
+### O que a release passa a dizer
+`Build verified` — e **não** `In-game tested`. Comportamento em jogo,
+compatibilidade de save, assinatura dos patches e carregamento dos asset bundles
+seguem sem verificação.
+
 ## [AlterraHub 1.0.7] — 2026-08-31 — o ZIP tinha uma pasta de topo
 
 ### Corrigido
