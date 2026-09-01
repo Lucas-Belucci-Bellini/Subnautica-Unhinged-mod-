@@ -7,7 +7,9 @@ name: Release
 # desenvolve: o build fica reproduzivel e ninguem precisa ter as refs locais.
 on:
   push:
-    tags: ['core-v*', 'scannerroom-v*', 'alterrahub-v*']
+    # Uma tag por MOD. `fcs-*` e a convencao a partir de agora; `alterrahub-*`
+    # fica aceita so para nao quebrar as duas tags ja publicadas.
+    tags: ['core-v*', 'scannerroom-v*', 'fcs-v*', 'alterrahub-v*']
   workflow_dispatch:
     inputs:
       pacote:
@@ -55,9 +57,29 @@ jobs:
             esac
           }
 
+          # ⚠️ O prefixo da tag identifica o MOD, nao o pacote interno: quem ve
+          # `fcs-v1.1.0` numa lista sabe o que vem dentro. `alterrahub` era nome
+          # de pasta vazando para o publico.
+          prefixo_de() {
+            case "$1" in
+              core)        echo "core" ;;
+              scannerroom) echo "scannerroom" ;;
+              alterrahub)  echo "fcs" ;;
+            esac
+          }
+          titulo_de() {
+            case "$1" in
+              core)        echo "Subnautica Unhinged — Core v$2" ;;
+              scannerroom) echo "Sala de Scanner v$2" ;;
+              alterrahub)  echo "FC Studios Modernized v$2" ;;
+            esac
+          }
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             pacote="${{ inputs.pacote }}"
-            tag="${pacote}-v$(versao_de "$pacote")"
+            v="$(versao_de "$pacote")"
+            tag="$(prefixo_de "$pacote")-v$v"
+            echo "titulo=$(titulo_de "$pacote" "$v")" >> "$GITHUB_OUTPUT"
             echo "pacote=$pacote" >> "$GITHUB_OUTPUT"
             echo "tag=$tag" >> "$GITHUB_OUTPUT"
             [ "${{ inputs.publicar }}" = "true" ] \
@@ -68,11 +90,13 @@ jobs:
 
           tag="${GITHUB_REF_NAME}"
           case "$tag" in
-            core-v*)        echo "pacote=core"        >> "$GITHUB_OUTPUT" ;;
-            scannerroom-v*) echo "pacote=scannerroom" >> "$GITHUB_OUTPUT" ;;
-            alterrahub-v*)  echo "pacote=alterrahub"  >> "$GITHUB_OUTPUT" ;;
+            core-v*)        p=core ;;
+            scannerroom-v*) p=scannerroom ;;
+            fcs-v*|alterrahub-v*) p=alterrahub ;;
             *) echo "::error::Tag '$tag' nao corresponde a nenhum pacote."; exit 1 ;;
           esac
+          echo "pacote=$p" >> "$GITHUB_OUTPUT"
+          echo "titulo=$(titulo_de "$p" "$(versao_de "$p")")" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "publicar=sim" >> "$GITHUB_OUTPUT"
 
@@ -144,6 +168,12 @@ jobs:
           #    estouram com NRE la na frente, longe da causa.
           MEMBROS="ConstructorInput::OnCraftingBegin,BaseBioReactor::charge,Builder::ghostModel,Builder::placeLayerMask,Builder::placeMaxDistance,Builder::rotationEnabled" ./tools/VerificarPatches/rodar.sh
 
+          # Um interruptor de modulo que nao casa com namespace nenhum e pior que
+          # interruptor nenhum: aparece no .cfg, o jogador desliga, e o modulo carrega
+          # assim mesmo. A lista sai do proprio Plugin.cs, sem duplicar.
+          chmod +x build/conferir-modulos.sh
+          ./build/conferir-modulos.sh
+
       - name: Publicar a release
         if: steps.alvo.outputs.publicar == 'sim'
         run: |
@@ -152,15 +182,56 @@ jobs:
           leiame=$(find dist -maxdepth 2 -name 'LEIA-ME.md' | head -1)
           tag='${{ steps.alvo.outputs.tag }}'
 
+          # Corpo = nivel de verificacao + checksum + o LEIA-ME.
+          #
+          # ⚠️ O nivel de verificacao e a PRIMEIRA coisa da release, e diz a verdade:
+          # este ambiente e Linux sem Subnautica, entao nada foi aberto no jogo. Uma
+          # release que insinua teste que nao houve custa mais caro que uma que admite
+          # o que falta.
+          corpo=$(mktemp)
+          {
+            echo 'Esta release contem a versao modernizada dos sistemas'
+            echo '**FC Studios** integrada ao **Subnautica Unhinged**.'
+            echo
+            echo '```text'
+            grep -E '^(Integrated Mod|Source Repository|Source Branch|Source Commit|Modernization Branch|Integrated Commit|Subnautica Build|BepInEx|Nautilus):' \
+              dist/BUILD-MANIFEST-*.txt || true
+            echo '```'
+            echo
+            echo '## Nivel de verificacao'
+            echo
+            echo '**`Build verified`** — compila contra as assemblies reais da build 82304'
+            echo 'e todo alvo de patch foi resolvido por metadata.'
+            echo
+            echo 'NAO foi testado em jogo (`In-game tested`) nem por testes automatizados'
+            echo '(`Automated tests verified`): o ambiente de build e Linux, sem Subnautica.'
+            echo 'Comportamento em jogo, compatibilidade de save, assinatura dos patches e'
+            echo 'carregamento dos asset bundles seguem **sem verificacao**.'
+            echo
+            echo '## SHA256'
+            echo
+            echo 'Confira com `sha256sum -c SHA256SUMS` (asset desta release).'
+            echo
+            echo '```'
+            cat dist/SHA256SUMS
+            echo '```'
+            echo
+            echo '---'
+            echo
+            cat "$leiame"
+          } > "$corpo"
+
           # Rodar de novo a mesma versao nao pode falhar o job: substitui os arquivos da
           # release existente em vez de estourar em "tag ja existe".
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" dist/*.zip --clobber
+            gh release upload "$tag" dist/*.zip dist/SHA256SUMS dist/BUILD-MANIFEST-*.txt --clobber
+            # o corpo tambem muda: o checksum acompanha o ZIP novo
+            gh release edit "$tag" --notes-file "$corpo"
           else
-            gh release create "$tag" dist/*.zip \
+            gh release create "$tag" dist/*.zip dist/SHA256SUMS dist/BUILD-MANIFEST-*.txt \
               --target "${GITHUB_SHA}" \
-              --title "$tag" \
-              --notes-file "$leiame" \
+              --title '${{ steps.alvo.outputs.titulo }}' \
+              --notes-file "$corpo" \
               --prerelease
           fi
         env:

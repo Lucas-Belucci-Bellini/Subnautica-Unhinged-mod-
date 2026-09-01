@@ -73,6 +73,30 @@ internal static class Program
         // Modo membro: confere alvos imperativos (AccessTools.Method/Field), que nao
         // tem atributo nenhum e por isso escapam da varredura de [HarmonyPatch].
         // Uso: MEMBROS="Tipo::Membro,Tipo::Membro" — resolve nas assemblies do jogo.
+        // Modo modulo: confere que cada namespace configuravel tem MESMO um [QModCore]
+        // no assembly. Sem isso, renomear um namespace transforma o interruptor do .cfg
+        // num no-op silencioso: ele aparece, o jogador desliga, e o modulo carrega assim
+        // mesmo. Ja aconteceu — o namespace do Cyclops nao tem o prefixo `FCS_`.
+        var modulos = Environment.GetEnvironmentVariable("MODULOS");
+        if (!string.IsNullOrWhiteSpace(modulos))
+        {
+            var tipos = TiposDe(asm).ToArray();
+            int mau = 0;
+            foreach (var ns in modulos.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()))
+            {
+                var achou = tipos.Count(t =>
+                    t.Namespace == ns &&
+                    t.GetCustomAttributesData().Any(a => a.AttributeType.Name == "QModCoreAttribute"));
+                if (achou == 0)
+                {
+                    Console.WriteLine($"  ✗ {ns}: NENHUM [QModCore] — o interruptor deste modulo seria no-op");
+                    mau++;
+                }
+                else Console.WriteLine($"  ✓ {ns}: {achou} [QModCore]");
+            }
+            return mau == 0 ? 0 : 1;
+        }
+
         var membros = Environment.GetEnvironmentVariable("MEMBROS");
         if (!string.IsNullOrWhiteSpace(membros))
         {
@@ -133,6 +157,10 @@ internal static class Program
         int ok = 0;
         var quebrados = new List<string>();
         var indefinidos = new List<string>();
+        // Alvo tocado por mais de uma classe de patch nao e erro por si — prefixo e
+        // postfix no mesmo metodo sao normais. Mas e onde conflito mora, entao vale
+        // ser listado em vez de descoberto em jogo.
+        var alvos = new List<(string Alvo, string Patch)>();
 
         foreach (var a in achados.DistinctBy(a => (a.Patch, a.Metodo)))
         {
@@ -155,7 +183,7 @@ internal static class Program
 
             if (candidatos.Length == 0)
                 quebrados.Add($"{a.Patch}.{a.Metodo}  ->  {t.FullName}::{nome}  NAO EXISTE");
-            else ok++;
+            else { ok++; alvos.Add(($"{t.FullName}::{nome}", a.Patch)); }
         }
 
         // Contagem crua ANTES do Distinct: sobrecarga de mesmo nome (varios `Postfix`
@@ -167,6 +195,12 @@ internal static class Program
         Console.WriteLine($"alvo resolvido     : {ok}");
         Console.WriteLine($"alvo INEXISTENTE   : {quebrados.Count}");
         Console.WriteLine($"indeterminado      : {indefinidos.Count}");
+
+        var multi = alvos.GroupBy(x => x.Alvo).Where(g => g.Count() > 1).ToArray();
+        Console.WriteLine($"alvo com >1 patch  : {multi.Length}");
+        if (multi.Length > 0 && Environment.GetEnvironmentVariable("CONFLITOS") == "1")
+            foreach (var g in multi.OrderBy(g => g.Key))
+                Console.WriteLine($"  {g.Key}\n    <- {string.Join("\n    <- ", g.Select(x => x.Patch))}");
 
         if (Environment.GetEnvironmentVariable("LISTAR") == "1")
         {

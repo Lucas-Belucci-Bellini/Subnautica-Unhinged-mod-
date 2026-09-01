@@ -26,15 +26,31 @@ namespace Unhinged.Legacy
         /// Uma falha num mod é registrada e não interrompe os demais — um mod legado
         /// quebrado não deve derrubar o carregamento inteiro.
         /// </summary>
+        /// <param name="filtro">
+        /// Decide se um <c>[QModCore]</c> deve rodar. Devolver <c>false</c> pula aquele
+        /// módulo inteiro — é o que permite desligar um dos sete módulos do pacote sem
+        /// recompilar. <c>null</c> roda todos.
+        /// </param>
         /// <returns>Quantos métodos de entrada rodaram sem erro.</returns>
         public static int Run(Assembly assembly, ManualLogSource log = null,
-            Func<Type, int> prioridade = null)
+            Func<Type, int> prioridade = null, Func<Type, bool> filtro = null)
         {
             if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 
             var cores = SafeGetTypes(assembly, log)
                 .Where(t => t.GetCustomAttribute<QModCoreAttribute>() != null)
                 .ToList();
+
+            // Filtrar ANTES de ordenar e de invocar: um modulo desligado nao deve nem
+            // aparecer na contagem de "pontos de entrada executados", senao o numero no
+            // log mente sobre o que realmente rodou.
+            if (filtro != null)
+            {
+                var antes = cores.Count;
+                cores = cores.Where(filtro).ToList();
+                if (cores.Count != antes)
+                    log?.LogInfo($"{antes - cores.Count} modulo(s) desligado(s) na configuracao.");
+            }
 
             // A ordem importa e o `GetTypes()` NAO a garante. Quando varios mods legados
             // moram no mesmo assembly (e o caso do pacote Alterra Hub, com 7 modulos), um

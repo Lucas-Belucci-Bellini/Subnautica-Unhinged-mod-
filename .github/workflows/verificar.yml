@@ -1,0 +1,85 @@
+name: Verificar
+
+# Roda em PR e em push no main. NAO publica nada: so compila e passa os portoes.
+#
+# Existe porque o release.yml so dispara por botao ou tag — entao um PR que
+# afirma "Build verified" nao tinha como ser conferido por quem le o PR. Aqui a
+# afirmacao vira um check.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NAUTILUS_TAG: '1.0.0-pre.53'
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # Mesmas referencias do release.yml. Nenhuma entra nos pacotes: o
+      # empacotar.sh recusa o build se um DLL de terceiro aparecer dentro.
+      - name: Baixar as referencias de compilacao
+        run: |
+          set -euo pipefail
+          mkdir -p refs /tmp/nautilus/x
+
+          # A TAG E OBRIGATORIA: todo release 1.x do Nautilus e pre-release, e
+          # `gh release ... latest` os ignora — cairia no SMLHelper 2.15 antigo.
+          gh release download "$NAUTILUS_TAG" --repo SubnauticaModding/Nautilus \
+            --pattern '*' --dir /tmp/nautilus --clobber
+          for a in /tmp/nautilus/*.zip; do
+            [ -e "$a" ] && unzip -o -q "$a" -d /tmp/nautilus/x || true
+          done
+          found=$(find /tmp/nautilus -name 'Nautilus.dll' | head -1)
+          [ -n "$found" ] || { echo "::error::Nautilus.dll nao encontrado em $NAUTILUS_TAG"; exit 1; }
+          cp "$found" refs/Nautilus.dll
+
+          base='https://raw.githubusercontent.com/ccgould/FCStudios_SubnauticaMods/4275d847de6e0f24c711b4b2a9f4308c10ea8248/Libs'
+          curl -sSfL "$base/SN_Exp/MoreCyclopsUpgrades.dll" -o refs/MoreCyclopsUpgrades.dll
+          curl -sSfL "$base/SN_Stable/NAudio.dll"           -o refs/NAudio.dll
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Compilar e empacotar os tres pacotes
+        run: |
+          chmod +x build/empacotar.sh
+          ./build/empacotar.sh
+
+      # Compilar nao prova que um patch encontra o alvo: o Harmony resolve por
+      # NOME, em runtime. Metodo renomeado numa atualizacao do jogo compila liso
+      # e derruba o modulo inteiro no carregamento.
+      - name: Conferir os alvos de Harmony contra as assemblies do jogo
+        run: |
+          set -euo pipefail
+          dotnet build tools/VerificarPatches -c Release -v q --nologo
+          ./tools/VerificarPatches/rodar.sh
+          MEMBROS="ConstructorInput::OnCraftingBegin,BaseBioReactor::charge,Builder::ghostModel,Builder::placeLayerMask,Builder::placeMaxDistance,Builder::rotationEnabled" ./tools/VerificarPatches/rodar.sh
+
+      - name: Conferir que nenhum interruptor de modulo e no-op
+        run: |
+          chmod +x build/conferir-modulos.sh
+          ./build/conferir-modulos.sh
+
+      - name: Resumo
+        run: |
+          {
+            echo '## Build verified'
+            echo
+            echo '| pacote | sha256 |'
+            echo '| --- | --- |'
+            ( cd dist && sha256sum *.zip | while read -r h f; do echo "| \`$f\` | \`$h\` |"; done )
+            echo
+            echo 'Compila contra a build 82304 e todo alvo de patch resolve por metadata.'
+            echo '**Nao** houve teste em jogo — o runner e Linux, sem Subnautica.'
+          } >> "$GITHUB_STEP_SUMMARY"
