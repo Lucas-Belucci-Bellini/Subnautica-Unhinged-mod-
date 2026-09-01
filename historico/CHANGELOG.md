@@ -1,5 +1,36 @@
 # Changelog — Subnautica Unhinged
 
+## [FCS 1.1.0] — 2026-09-01 — o FCS vira o primeiro caso de um processo
+
+O repositório passa a ser uma **plataforma de manutenção de mods modernizados**,
+e o FC Studios é o primeiro a passar pelo processo inteiro.
+
+### Adicionado
+- **`docs/mods/`** — um diretório por mod, com sete documentos:
+  `UPSTREAM` · `AUDIT` · `PORT` · `COMPATIBILITY` · `ASSETS` · `TESTS` · `RELEASE`.
+  O próximo mod é `docs/mods/<nome>/` com os mesmos arquivos.
+- **`docs/SUBNAUTICA-COMPATIBILITY-MATRIX.md`** — o que é `VERIFIED`, o que é
+  `ASSUMED` e o que é `UNVERIFIED`. ⚠️ A **build instalada** do operador está em
+  `UNVERIFIED`, e é a divergência que falta resolver.
+- **`BUILD-MANIFEST.txt`** e **`SHA256SUMS`** — gerados pelo empacotador, dentro
+  do ZIP e soltos como assets.
+- **Procedimento de validação de runtime** (`TESTS.md` §1): 17 testes e 4
+  cenários de conflito, todos ⬜ — **nada foi executado em jogo**.
+
+### Convenção fixada
+Tag `fcs-v1.1.0`, título **"FC Studios Modernized v1.1.0"**. Nunca
+`Unhinged vX.Y.Z` quando a mudança principal for um mod incorporado — quem baixa
+não teria como saber o que vem dentro.
+
+### Medido
+529 arquivos **idênticos** ao upstream · 128 com mudança real · 0 novos ·
+0 apagados · 0 `BREAKING CHANGE` · 0 ClassID duplicado · 0 TechType duplicado ·
+12 alvos com mais de um patch, todos explicáveis.
+
+### Corrigido
+- `SHA256SUMS` listava sobras de build anterior (`1.0.6`, `1.0.7`) junto com o
+  pacote atual. Agora só o que a execução produziu.
+
 ## [AlterraHub 1.1.0] — 2026-09-01 — configuração central e as auditorias
 
 ### Adicionado
