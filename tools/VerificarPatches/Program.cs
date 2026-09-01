@@ -157,6 +157,10 @@ internal static class Program
         int ok = 0;
         var quebrados = new List<string>();
         var indefinidos = new List<string>();
+        // Alvo tocado por mais de uma classe de patch nao e erro por si — prefixo e
+        // postfix no mesmo metodo sao normais. Mas e onde conflito mora, entao vale
+        // ser listado em vez de descoberto em jogo.
+        var alvos = new List<(string Alvo, string Patch)>();
 
         foreach (var a in achados.DistinctBy(a => (a.Patch, a.Metodo)))
         {
@@ -179,7 +183,7 @@ internal static class Program
 
             if (candidatos.Length == 0)
                 quebrados.Add($"{a.Patch}.{a.Metodo}  ->  {t.FullName}::{nome}  NAO EXISTE");
-            else ok++;
+            else { ok++; alvos.Add(($"{t.FullName}::{nome}", a.Patch)); }
         }
 
         // Contagem crua ANTES do Distinct: sobrecarga de mesmo nome (varios `Postfix`
@@ -191,6 +195,12 @@ internal static class Program
         Console.WriteLine($"alvo resolvido     : {ok}");
         Console.WriteLine($"alvo INEXISTENTE   : {quebrados.Count}");
         Console.WriteLine($"indeterminado      : {indefinidos.Count}");
+
+        var multi = alvos.GroupBy(x => x.Alvo).Where(g => g.Count() > 1).ToArray();
+        Console.WriteLine($"alvo com >1 patch  : {multi.Length}");
+        if (multi.Length > 0 && Environment.GetEnvironmentVariable("CONFLITOS") == "1")
+            foreach (var g in multi.OrderBy(g => g.Key))
+                Console.WriteLine($"  {g.Key}\n    <- {string.Join("\n    <- ", g.Select(x => x.Patch))}");
 
         if (Environment.GetEnvironmentVariable("LISTAR") == "1")
         {
