@@ -73,6 +73,30 @@ internal static class Program
         // Modo membro: confere alvos imperativos (AccessTools.Method/Field), que nao
         // tem atributo nenhum e por isso escapam da varredura de [HarmonyPatch].
         // Uso: MEMBROS="Tipo::Membro,Tipo::Membro" — resolve nas assemblies do jogo.
+        // Modo modulo: confere que cada namespace configuravel tem MESMO um [QModCore]
+        // no assembly. Sem isso, renomear um namespace transforma o interruptor do .cfg
+        // num no-op silencioso: ele aparece, o jogador desliga, e o modulo carrega assim
+        // mesmo. Ja aconteceu — o namespace do Cyclops nao tem o prefixo `FCS_`.
+        var modulos = Environment.GetEnvironmentVariable("MODULOS");
+        if (!string.IsNullOrWhiteSpace(modulos))
+        {
+            var tipos = TiposDe(asm).ToArray();
+            int mau = 0;
+            foreach (var ns in modulos.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()))
+            {
+                var achou = tipos.Count(t =>
+                    t.Namespace == ns &&
+                    t.GetCustomAttributesData().Any(a => a.AttributeType.Name == "QModCoreAttribute"));
+                if (achou == 0)
+                {
+                    Console.WriteLine($"  ✗ {ns}: NENHUM [QModCore] — o interruptor deste modulo seria no-op");
+                    mau++;
+                }
+                else Console.WriteLine($"  ✓ {ns}: {achou} [QModCore]");
+            }
+            return mau == 0 ? 0 : 1;
+        }
+
         var membros = Environment.GetEnvironmentVariable("MEMBROS");
         if (!string.IsNullOrWhiteSpace(membros))
         {
