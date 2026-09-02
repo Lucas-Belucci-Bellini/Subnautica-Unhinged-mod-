@@ -1,5 +1,64 @@
 # Changelog — Subnautica Unhinged
 
+## [FCS 1.4.0] — 2026-09-02 — os itens existiam e nao funcionavam: faltava achar os bundles
+
+Com a 1.3.0 os itens passaram a APARECER. Nao passaram a FUNCIONAR — e a causa e
+uma linha:
+
+    AssetBundle.LoadFromFile(Path.Combine(ExecutingFolder, "Assets", bundleName));
+
+Um caminho, sem alternativa, devolvendo null calado. Todo prefab do FCS sai de um
+dos SETE bundles; sem o arquivo, o TechType e a receita existem, o item aparece no
+PDA e no construtor, e nao ha modelo, componente nem comportamento por tras dele.
+
+### Corrigido — `UnhingedModPaths.LocalizarBundle`
+Procura nos layouts que uma instalacao real tem, nesta ordem: subpasta por modulo ·
+achatado · **`QMods/<Modulo>/Assets/`** · `QMods/` sem o prefixo `FCS_` · e as
+quatro sem a subpasta `Assets/`.
+
+⚠️ O terceiro e o que importa na pratica: quem usava o FCS antes o tinha sob
+`QMods/`, pelo QModManager, e esses arquivos continuam no disco depois de migrar
+para o BepInEx. O mod passa a funcionar SEM copiar nada. E leitura da instalacao do
+proprio operador — nao escreve nada la, e nao e redistribuicao.
+
+Testado nos 6 casos (os 5 layouts + "nao existe"), todos com o resultado esperado.
+
+### Diagnostico — bundle vira linha propria
+`AnotarBundle` poe cada bundle no relatorio, com o caminho que funcionou ou os que
+foram tentados. Categoria separada de proposito: o registro de itens diz se o
+conteudo EXISTE, o de bundle diz se ele FUNCIONA. Sem essa separacao o relatorio
+mostraria tudo verde enquanto o jogo mostra um objeto vazio.
+
+### `docs/FCS_ASSETS.md` — a resposta sobre redistribuir os assets
+Medido no upstream `4275d84`: 667 `.cs`, 19 `.dll` de terceiros, e **ZERO** `.png`,
+`.fbx`, `.prefab` ou bundle. O MIT cobre "the Software" daquele repositorio, e a
+arte nunca esteve la — ela so existe nos pacotes compilados do autor, que nao estao
+sob aquela licenca. Entao NAO ha asset original recuperavel legalmente para
+embutir, e este projeto nao embute nenhum.
+
+Isso nao e desistir e nao e fazer placeholder: e usar a arte verdadeira a partir da
+copia que o operador ja tem — que e exatamente o que o localizador acima faz.
+
+### `docs/FCS_RECIPE_BALANCE.md` — por que NAO reescrevi 50 receitas
+Medido: 53 blocos `RecipeData`; 29 usam um **Kit** como ingrediente, 4 usam material
+vanilla, 4 estao vazios, 16 em outras formas. O FCS nao e "junte titanio": e
+economia — minerar, vender, comprar o Kit na loja com creditos, construir. O botao
+de balanceamento e o PRECO, e a curva medida das 29 entradas de loja e sa
+(7 500 a 700 000, quatro faixas povoadas, nenhum ingrediente com quantidade > 10).
+
+Trocar Kit por material vanilla apagaria o laco que e o nucleo do mod — o §6 do
+proprio briefing manda preservar a funcao original. Mantidas as 53 receitas e os 29
+precos, sem alterar nenhum. Ficam documentados os gatilhos objetivos para mexer, e
+a heuristica de custo para item NOVO.
+
+⚠️ A primeira medicao de receitas saiu errada e esta registrada no doc: contei so
+`new Ingredient(TechType.X, n)` e conclui "49 de 53 blocos nao tem ingredientes".
+Tinham — na forma `XKitClassID.ToTechType()`. Zero ingredientes num mod que
+claramente os tem era sinal de instrumento errado, nao de mod quebrado.
+
+Nivel de verificacao: **Build verified**. Nada disto foi visto em jogo.
+
+
 ## [FCS 1.3.0] — 2026-09-02 — P0 resolvido: as DUAS causas do conteudo que nao existia
 
 Diagnosticado com evidencia do jogo (`Unhinged-RegistroFCS.md` + `LogOutput.log` da

@@ -36,6 +36,26 @@ namespace FCS_AlterraHub.API
         private static readonly Dictionary<string, Texture2D> loadedImages = new();
         private static readonly Dictionary<string, GameObject> loadedPrefabs = new();
         public string GlobalBundleName => Mod.AssetBundleName;
+
+        /// <summary>
+        /// De qual módulo é um bundle. Necessário porque a sobrecarga que recebe
+        /// `executingFolder` é chamada pelos outros seis módulos, e o localizador
+        /// precisa saber qual subpasta (`FCS_EnergySolutions`, …) procurar.
+        /// </summary>
+        private static string ModuloDoBundle(string bundleName)
+        {
+            switch ((bundleName ?? string.Empty).ToLowerInvariant())
+            {
+                case "fcsalterrahubbundle":          return "FCS_AlterraHub";
+                case "fcsenergysolutionsbundle":     return "FCS_EnergySolutions";
+                case "fcshomesolutionsbundle":       return "FCS_HomeSolutions";
+                case "fcslifesupportsolutionsbundle":return "FCS_LifeSupportSolutions";
+                case "fcsproductionsolutionsbundle": return "FCS_ProductionSolutions";
+                case "fcsstoragesolutionsbundle":    return "FCS_StorageSolutions";
+                case "cyclopsupgradeconsolebundle":  return "FCS_CyclopsUpgradeConsole";
+                default:                             return null;
+            }
+        }
         public Texture2D GetEncyclopediaTexture2D(string imageName, string bundleName = "")
         {
             QuickLogger.Debug($"Trying to find {imageName} in bundle {bundleName}");
@@ -111,7 +131,7 @@ namespace FCS_AlterraHub.API
                 return preLoadedBundle;
             }
 
-            var onDemandBundle = AssetBundle.LoadFromFile(Path.Combine(ExecutingFolder,"Assets", bundleName));
+            var onDemandBundle = CarregarBundle(bundleName, ExecutingFolder, "FCS_AlterraHub");
 
             if (onDemandBundle != null)
             {
@@ -120,6 +140,41 @@ namespace FCS_AlterraHub.API
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Carrega um bundle procurando nos layouts de instalação possíveis, e registra
+        /// o resultado no relatório de diagnóstico.
+        /// </summary>
+        /// <remarks>
+        /// ⚠️ <b>Esta é a diferença entre "o item aparece" e "o item funciona".</b> Todo
+        /// prefab do FCS sai de um destes sete bundles. Sem o arquivo, o TechType e a
+        /// receita existem, o item aparece no PDA e no construtor — e não faz nada,
+        /// porque não há modelo, nem componente, nem comportamento por trás dele.
+        ///
+        /// O original tentava UM caminho (<c>&lt;pasta&gt;/Assets/&lt;bundle&gt;</c>) e
+        /// devolvia null calado. Agora tenta os layouts reais — inclusive a pasta
+        /// <c>QMods/</c> do QModManager, que é onde os arquivos já estão em quem usava o
+        /// FCS antes — e, quando falha, diz no relatório EXATAMENTE onde procurou.
+        /// </remarks>
+        internal static AssetBundle CarregarBundle(string bundleName, string pastaFallback, string nomeDoModulo)
+        {
+            var caminho = UnhingedModPaths.LocalizarBundle(
+                Assembly.GetExecutingAssembly(), nomeDoModulo, bundleName);
+
+            // Sem candidato conhecido, ainda vale tentar o caminho classico: o modulo
+            // pode ter recebido uma pasta por outro meio.
+            if (caminho == null && !string.IsNullOrEmpty(pastaFallback))
+                caminho = Path.Combine(Path.Combine(pastaFallback, "Assets"), bundleName);
+
+            AssetBundle bundle = null;
+            if (caminho != null && File.Exists(caminho))
+                bundle = AssetBundle.LoadFromFile(caminho);
+
+            Unhinged.Legacy.Diagnostico.RegistroDeConteudo.AnotarBundle(
+                nomeDoModulo, bundleName, bundle != null, caminho);
+
+            return bundle;
         }
 
         public Sprite GetIconByName(string iconName)
@@ -148,7 +203,7 @@ namespace FCS_AlterraHub.API
                 return preLoadedBundle;
             }
 
-            var onDemandBundle = AssetBundle.LoadFromFile(Path.Combine(executingFolder, "Assets", bundleName));
+            var onDemandBundle = CarregarBundle(bundleName, executingFolder, ModuloDoBundle(bundleName));
 
             if (onDemandBundle != null)
             {
