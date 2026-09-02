@@ -14,7 +14,7 @@ namespace Unhinged.AlterraHub
     /// <c>[BepInPlugin]</c>. Sem esta classe, o DLL compilaria, seria ignorado no
     /// carregamento e o mod simplesmente não existiria em jogo — sem erro nenhum.
     /// </summary>
-    [BepInPlugin(Guid, "Subnautica Unhinged — Alterra Hub (FCStudios)", "1.1.0")]
+    [BepInPlugin(Guid, "Subnautica Unhinged — Alterra Hub (FCStudios)", "1.2.0")]
     // Hard, não Soft: ao contrário do Core, este pacote realmente chama a API do Nautilus
     // em toda receita e todo prefab. Carregar sem ele seria falhar mais tarde e pior.
     [BepInDependency(NautilusGuid, BepInDependency.DependencyFlags.HardDependency)]
@@ -32,6 +32,7 @@ namespace Unhinged.AlterraHub
 
         private BepInEx.Configuration.ConfigEntry<bool> _forcarComPilhaLegada;
         private BepInEx.Configuration.ConfigEntry<bool> _habilitarFcs;
+        private BepInEx.Configuration.ConfigEntry<bool> _diagnostico;
 
         /// <summary>
         /// Namespace de cada modulo -> a chave que o liga/desliga.
@@ -70,6 +71,13 @@ namespace Unhinged.AlterraHub
                 "Carrega mesmo com QModManager/SMLHelper ativos. Padrao false: as duas "
                 + "pilhas patcham os mesmos metodos do jogo, e rodar as duas juntas e o "
                 + "cenario onde o jogo trava sem explicacao.");
+
+            _diagnostico = Config.Bind(
+                "3. Diagnostico", "RegistroDeConteudo", true,
+                "Escreve BepInEx/Unhinged-RegistroFCS.md com o que cada item conseguiu "
+                + "registrar (TechType, icone, liberado). Custa uma linha por item na "
+                + "memoria e um arquivo por partida — NAO polui o log. Desligue quando "
+                + "nao estiver diagnosticando.");
 
             _habilitarFcs = Config.Bind(
                 "2. Modulos", "EnableFCS", true,
@@ -127,6 +135,8 @@ namespace Unhinged.AlterraHub
                 return;
             }
 
+            Unhinged.Legacy.Diagnostico.RegistroDeConteudo.Ligado = _diagnostico.Value;
+
             try
             {
                 var executados = LegacyModLoader.Run(
@@ -136,6 +146,8 @@ namespace Unhinged.AlterraHub
                     ModuloEstaLigado);
 
                 Logger.LogInfo($"Alterra Hub: {executados} ponto(s) de entrada executado(s).");
+
+                EscreverDiagnostico();
 
                 if (executados == 0)
                 {
@@ -148,6 +160,44 @@ namespace Unhinged.AlterraHub
             {
                 // Um pacote que falha inteiro não pode levar o resto do jogo junto.
                 Logger.LogError($"Falha ao carregar o Alterra Hub: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Escreve o relatorio de registro e loga so o RESUMO.
+        ///
+        /// O relatorio vai para arquivo de proposito: o `LogOutput.log` tem dezenas de
+        /// milhares de linhas de todos os mods, e uma tabela de 88 itens ali dentro nao
+        /// seria lida por ninguem. No log fica uma linha — que ja responde "registrou
+        /// alguma coisa?" sem abrir nada.
+        /// </summary>
+        private void EscreverDiagnostico()
+        {
+            if (_diagnostico == null || !_diagnostico.Value) return;
+
+            try
+            {
+                var itens = Unhinged.Legacy.Diagnostico.RegistroDeConteudo.Entradas;
+                var comTech = itens.Count(x => x.Falha == null && x.TechTypeValor != 0);
+                var trancados = itens.Count(x => x.Falha == null && !x.LiberadoNoInicio);
+
+                if (itens.Count == 0)
+                    Logger.LogError(
+                        "Alterra Hub: NENHUM item tentou se registrar. Nao e receita nem "
+                        + "unlock — e a montante disso. Veja Unhinged-RegistroFCS.md.");
+                else
+                    Logger.LogInfo(
+                        $"Alterra Hub: {comTech}/{itens.Count} itens com TechType, "
+                        + $"{trancados} bloqueado(s). Detalhe em Unhinged-RegistroFCS.md.");
+
+                var destino = System.IO.Path.Combine(Paths.BepInExRootPath, "Unhinged-RegistroFCS.md");
+                System.IO.File.WriteAllText(
+                    destino, Unhinged.Legacy.Diagnostico.RegistroDeConteudo.Relatorio());
+            }
+            catch (Exception ex)
+            {
+                // Diagnostico que derruba o mod e pior que diagnostico nenhum.
+                Logger.LogWarning($"Nao consegui escrever o registro de conteudo: {ex.Message}");
             }
         }
 

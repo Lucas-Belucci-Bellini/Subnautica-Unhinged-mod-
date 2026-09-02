@@ -86,6 +86,20 @@ namespace SMLHelper.V2.Assets
 
             Prefab.Register();
 
+            // Anotar DEPOIS do Register, com o TechType que o Nautilus devolveu — e nao
+            // com o que pretendiamos registrar. `TechType.None` aqui significa que o
+            // registro falhou em silencio, e e a diferenca entre "o item nao aparece
+            // porque esta trancado" e "o item nao existe".
+            Unhinged.Legacy.Diagnostico.RegistroDeConteudo.Anotar(new Unhinged.Legacy.Diagnostico.RegistroDeConteudo.Entrada
+            {
+                ClassID = ClassID,
+                Modulo = GetType().Namespace?.Split('.')[0],
+                TechType = TechType.ToString(),
+                TechTypeValor = (int)TechType,
+                TemIcone = icon != null,
+                LiberadoNoInicio = ResolverLiberadoNoInicio(),
+            });
+
             OnFinishedPatching?.Invoke();
         }
 
