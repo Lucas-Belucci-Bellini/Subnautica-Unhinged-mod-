@@ -1,5 +1,84 @@
 # Changelog — Subnautica Unhinged
 
+## [FCS 1.2.2] — 2026-09-02 — o LEIA-ME da release estava congelado na v1.0.7
+
+Só documentação: **nenhuma linha de código mudou**. Os DLLs não saem idênticos
+porque o número de versão está dentro deles, mas o comportamento é o da 1.2.1.
+
+Foi versão nova em vez de reescrever a 1.2.1 porque o ZIP muda de conteúdo — e
+duas pessoas baixando "1.2.1" em dias diferentes receberiam arquivos com SHA
+diferente, que é o tipo de mentira que o manifesto existe para impedir.
+
+### Corrigido
+- **O corpo da release vem do `LEIA-ME-RELEASE.md`**, e ele trazia `· v1.0.7` no
+  título — então a página da **1.2.1 abria escrito "v1.0.7"**. Pior: o texto
+  parava na 1.0.7 e **não mencionava o diagnóstico**, que é a razão inteira da
+  1.2.x e o arquivo que o operador precisa mandar. A versão saiu do título de
+  vez (ela já está no título da release e no `BUILD-MANIFEST.txt`) — assim não
+  há o que envelhecer.
+
+### Adicionado
+- Seção **"Esta versão gera um diagnóstico"** no topo do LEIA-ME: onde o arquivo
+  fica (`BepInEx\Unhinged-RegistroFCS.md`), o que cada garantia de escrita ao
+  vivo compra, o que mandar junto (`LogOutput.log`) e como desligar
+  (`[3. Diagnostico] RegistroDeConteudo`, em
+  `BepInEx\config\com.subnauticaunhinged.alterrahub.cfg`).
+
+## [FCS 1.2.1] — 2026-09-02 — o registro sobrevive ao jogo fechar
+
+O operador apontou o risco: *"tem perigo de quando eu copiar o jogo fechar"*. A
+1.2.0 escrevia o relatório de uma vez só, **depois** do registro terminar — três
+buracos, e os três exatamente no caso em que o diagnóstico mais importa.
+
+### Corrigido
+- Jogo fecha no meio do registro → antes não sobrava arquivo nenhum.
+- `LegacyModLoader.Run` estoura → caía no `catch` e o arquivo nunca era escrito.
+  Ou seja: falhar no meio é o cenário a diagnosticar, e era justo nele que o
+  diagnóstico não saía.
+- Arquivo aberto sem compartilhamento → o Windows **impedia copiar** com o jogo
+  aberto. `FileShare.ReadWrite | FileShare.Delete` não é detalhe: é o que
+  permite copiar sem fechar o Subnautica.
+
+### Como ficou
+`AbrirArquivo` roda **antes** do primeiro item; `AutoFlush = true` põe cada linha
+no disco na hora; `FecharArquivo` num `finally` e também no `catch`, com o motivo
+virando seção "Interrompido" dentro do próprio arquivo.
+
+Testado nos cinco casos: arquivo existe antes do primeiro item · itens no disco
+com o fluxo ainda aberto · `File.Copy` funciona com o arquivo aberto · exceção
+grava causa e resumo · fechar duas vezes é no-op.
+
+## [FCS 1.2.0] — 2026-09-02 — trocar o adivinhar por medição
+
+"O item não aparece" é compatível com **sete** causas diferentes, cada uma com
+conserto diferente. Adivinhar entre elas já custou três versões a este projeto.
+
+### O que o `unlock all` já elimina
+O comando percorre TechTypes que **existem**: item bloqueado ele libera, item com
+receita quebrada ele mostra. Item **sem** TechType ele não alcança. Não aparecer
+nem com `unlock all` é evidência de que o TechType nunca nasceu — a montante de
+receita, PDA e desbloqueio. Os três suspeitos naturais caem, e sobram duas
+causas, as duas de **carregamento**.
+
+### Adicionado
+- **`RegistroDeConteudo`** — anota **dentro** do `Patch()`, depois de o Nautilus
+  devolver o TechType: fato, não intenção. Escreve
+  `BepInEx\Unhinged-RegistroFCS.md`, uma linha por item.
+- Com zero itens o relatório não diz só "vazio": diz que **não** é receita, PDA
+  nem unlock, e lista os três passos de carregamento a conferir, em ordem.
+- `docs/mods/fcs/P0-ITENS-AUSENTES.md` e
+  `docs/mods/fcs/COMPATIBILITY-PROTOTYPESUB.md`.
+
+### Medido (estático — nada disto é teste em jogo)
+- 187 chamadas `.Patch()` nos 7 módulos — o registro **está** codificado.
+- 88 ClassIDs do FCS × 63 TechTypes do PrototypeSub = **0 colisões**.
+- 0 transpilers do lado do FCS.
+
+⚠️ **De qual versão é a observação?** Até a 1.0.6 o ZIP tinha pasta de topo e o
+mod **nunca era carregado**. Se o relato vem de lá, "os itens não aparecem" já
+está inteiramente explicado.
+
+
 ## [FCS 1.1.0] — 2026-09-01 — o FCS vira o primeiro caso de um processo
 
 O repositório passa a ser uma **plataforma de manutenção de mods modernizados**,

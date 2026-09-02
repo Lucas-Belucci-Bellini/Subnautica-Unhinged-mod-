@@ -1,4 +1,39 @@
-# Alterra Hub — suíte FCStudios portada · v1.0.7
+# Alterra Hub — suíte FCStudios portada
+
+> A versão está no título da release e no `BUILD-MANIFEST.txt`, não aqui. Este texto é
+> o mesmo arquivo em toda release — escrever a versão nele fazia a página da v1.2.1
+> abrir com o título "v1.0.7".
+
+## 🩺 Esta versão gera um diagnóstico — e é ele que eu preciso ver
+
+Os itens do FCS não aparecerem **nem com `unlock all`** aponta para longe de receita,
+PDA e desbloqueio: o comando percorre TechTypes que **existem**, então item bloqueado
+ele libera e item com receita quebrada ele mostra. Não alcançar é evidência de que o
+TechType nunca nasceu — ou seja, o problema é de **carregamento**, a montante de tudo.
+
+Para não continuar adivinhando, o mod agora escreve, item a item, o que **de fato**
+registrou:
+
+```
+Subnautica\BepInEx\Unhinged-RegistroFCS.md
+```
+
+Uma linha por item, com ClassID, módulo, TechType, valor, ícone e se nasce liberado.
+
+**O arquivo é escrito ao vivo**, e isso é de propósito:
+
+| | |
+| --- | --- |
+| Existe **antes** do primeiro item | Se ele estiver vazio, isso já é o diagnóstico |
+| Cada linha vai ao disco na hora | O jogo fechar no item 37 deixa 37 gravados — e **onde parou** é metade da resposta |
+| Dá para **copiar com o jogo aberto** | Não precisa fechar o Subnautica para me mandar o arquivo |
+| Estouro vira seção "Interrompido" | Com o tipo e a mensagem da exceção, dentro do próprio arquivo |
+
+**O que me mandar:** esse arquivo e, junto, o `BepInEx\LogOutput.log`.
+
+Para desligar (ele não é permanente), ponha `RegistroDeConteudo = false` na seção
+`[3. Diagnostico]` de `BepInEx\config\com.subnauticaunhinged.alterrahub.cfg` — o
+arquivo é criado sozinho na primeira execução.
 
 ## 🔴 Se você tem a v1.0.6 ou anterior, ela nunca carregou — e o defeito era do ZIP
 
