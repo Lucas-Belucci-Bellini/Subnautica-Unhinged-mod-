@@ -14,7 +14,7 @@ namespace Unhinged.AlterraHub
     /// <c>[BepInPlugin]</c>. Sem esta classe, o DLL compilaria, seria ignorado no
     /// carregamento e o mod simplesmente não existiria em jogo — sem erro nenhum.
     /// </summary>
-    [BepInPlugin(Guid, "Subnautica Unhinged — Alterra Hub (FCStudios)", "1.2.0")]
+    [BepInPlugin(Guid, "Subnautica Unhinged — Alterra Hub (FCStudios)", "1.2.1")]
     // Hard, não Soft: ao contrário do Core, este pacote realmente chama a API do Nautilus
     // em toda receita e todo prefab. Carregar sem ele seria falhar mais tarde e pior.
     [BepInDependency(NautilusGuid, BepInDependency.DependencyFlags.HardDependency)]
@@ -137,6 +137,12 @@ namespace Unhinged.AlterraHub
 
             Unhinged.Legacy.Diagnostico.RegistroDeConteudo.Ligado = _diagnostico.Value;
 
+            // Abrir ANTES de registrar qualquer coisa. O arquivo passa a existir na
+            // primeira linha da carga, e cresce item a item — se o jogo fechar no meio,
+            // o que estiver gravado ja vale, e onde parou e metade da resposta.
+            var arquivoDiag = System.IO.Path.Combine(Paths.BepInExRootPath, "Unhinged-RegistroFCS.md");
+            Unhinged.Legacy.Diagnostico.RegistroDeConteudo.AbrirArquivo(arquivoDiag);
+
             try
             {
                 var executados = LegacyModLoader.Run(
@@ -160,6 +166,15 @@ namespace Unhinged.AlterraHub
             {
                 // Um pacote que falha inteiro não pode levar o resto do jogo junto.
                 Logger.LogError($"Falha ao carregar o Alterra Hub: {ex}");
+                Unhinged.Legacy.Diagnostico.RegistroDeConteudo.FecharArquivo(
+                    "O carregamento estourou: `" + ex.GetType().Name + ": " + ex.Message + "`. "
+                    + "Os itens acima sao os que deram tempo de registrar.");
+            }
+            finally
+            {
+                // `finally` de proposito: o caso em que o diagnostico mais vale e
+                // justamente aquele em que ele nao sairia se dependesse do caminho feliz.
+                Unhinged.Legacy.Diagnostico.RegistroDeConteudo.FecharArquivo();
             }
         }
 
@@ -190,9 +205,7 @@ namespace Unhinged.AlterraHub
                         $"Alterra Hub: {comTech}/{itens.Count} itens com TechType, "
                         + $"{trancados} bloqueado(s). Detalhe em Unhinged-RegistroFCS.md.");
 
-                var destino = System.IO.Path.Combine(Paths.BepInExRootPath, "Unhinged-RegistroFCS.md");
-                System.IO.File.WriteAllText(
-                    destino, Unhinged.Legacy.Diagnostico.RegistroDeConteudo.Relatorio());
+                // O arquivo ja foi escrito ao vivo, item a item. Aqui so o log.
             }
             catch (Exception ex)
             {

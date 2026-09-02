@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -33,15 +34,107 @@ namespace Unhinged.Legacy.Diagnostico
 
         private static readonly List<Entrada> _entradas = new List<Entrada>();
         private static readonly object _trava = new object();
+        private static StreamWriter _fluxo;
+        private static string _caminho;
 
         /// <summary>Desligado, `Anotar` não faz nada e não custa nada.</summary>
         public static bool Ligado { get; set; }
 
+        /// <summary>
+        /// Abre o arquivo AGORA e escreve o cabeçalho, antes de qualquer registro.
+        ///
+        /// Escrever tudo no fim parece mais limpo e é pior: se o jogo fechar no meio do
+        /// registro — que é justamente quando o diagnóstico importa —, não sobra arquivo
+        /// nenhum. Aqui cada item é gravado e descarregado no disco na hora, então um
+        /// fechamento no item 37 deixa um arquivo com 37 itens, e onde ele parou já é
+        /// metade da resposta.
+        ///
+        /// ⚠️ `FileShare.ReadWrite` não é detalhe: sem ele o Windows **impede** que o
+        /// arquivo seja copiado enquanto o jogo está aberto, e a única hora em que dá
+        /// para copiar seria depois de fechar — exatamente o que se quer evitar.
+        /// </summary>
+        public static void AbrirArquivo(string caminho)
+        {
+            if (!Ligado) return;
+            try
+            {
+                _caminho = caminho;
+                var fs = new FileStream(caminho, FileMode.Create, FileAccess.Write,
+                                        FileShare.ReadWrite | FileShare.Delete);
+                _fluxo = new StreamWriter(fs) { AutoFlush = true };
+                _fluxo.WriteLine("# Registro de conteudo — Alterra Hub (FCS)");
+                _fluxo.WriteLine();
+                _fluxo.WriteLine("Aberto em " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ".");
+                _fluxo.WriteLine();
+                _fluxo.WriteLine("> Este arquivo e escrito AO VIVO, um item por vez. Se o jogo fechar");
+                _fluxo.WriteLine("> no meio, o que estiver aqui ja vale — e onde ele para e a pista.");
+                _fluxo.WriteLine("> Pode copiar com o jogo aberto.");
+                _fluxo.WriteLine();
+                _fluxo.WriteLine("| # | ClassID | modulo | TechType | valor | icone | liberado |");
+                _fluxo.WriteLine("| ---: | --- | --- | --- | ---: | :---: | :---: |");
+            }
+            catch (Exception)
+            {
+                // Sem arquivo, a coleta em memoria continua e o resumo final ainda sai.
+                _fluxo = null;
+            }
+        }
+
         public static void Anotar(Entrada e)
         {
             if (!Ligado || e == null) return;
-            lock (_trava) _entradas.Add(e);
+            lock (_trava)
+            {
+                _entradas.Add(e);
+                EscreverLinha(_entradas.Count, e);
+            }
         }
+
+        private static void EscreverLinha(int n, Entrada e)
+        {
+            if (_fluxo == null) return;
+            try
+            {
+                if (e.Falha != null)
+                    _fluxo.WriteLine("| " + n + " | `" + e.ClassID + "` | " + e.Modulo
+                        + " | ❌ " + e.Falha + " | — | — | — |");
+                else
+                    _fluxo.WriteLine("| " + n + " | `" + e.ClassID + "` | " + e.Modulo
+                        + " | " + (e.TechType ?? "—") + " | " + e.TechTypeValor
+                        + " | " + (e.TemIcone ? "sim" : "—")
+                        + " | " + (e.LiberadoNoInicio ? "sim" : "BLOQ") + " |");
+            }
+            catch (Exception) { _fluxo = null; }
+        }
+
+        /// <summary>
+        /// Fecha o arquivo escrevendo o resumo. Chamada de um `finally`: um registro que
+        /// estoura no meio é o caso em que o diagnóstico mais vale, e seria o exato caso
+        /// em que ele não sairia se dependesse do caminho feliz.
+        /// </summary>
+        public static void FecharArquivo(string motivo = null)
+        {
+            if (_fluxo == null) return;
+            try
+            {
+                _fluxo.WriteLine();
+                if (motivo != null)
+                {
+                    _fluxo.WriteLine("## ⚠️ Interrompido");
+                    _fluxo.WriteLine();
+                    _fluxo.WriteLine(motivo);
+                    _fluxo.WriteLine();
+                }
+                _fluxo.Write(Resumo());
+                _fluxo.Flush();
+                _fluxo.Dispose();
+            }
+            catch (Exception) { }
+            finally { _fluxo = null; }
+        }
+
+        /// <summary>Onde o arquivo está, para o log poder dizer.</summary>
+        public static string Caminho => _caminho;
 
         public static void AnotarFalha(string classId, string modulo, Exception ex)
         {
@@ -67,12 +160,24 @@ namespace Unhinged.Legacy.Diagnostico
         /// </summary>
         public static string Relatorio()
         {
-            var itens = Entradas;
             var sb = new StringBuilder();
             sb.AppendLine("# Registro de conteudo — Alterra Hub (FCS)");
             sb.AppendLine();
             sb.AppendLine("Gerado em " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ".");
             sb.AppendLine();
+            sb.Append(Resumo());
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// O diagnóstico em si, sem cabeçalho. Serve tanto ao relatório de uma vez só
+        /// quanto ao rodapé do arquivo escrito ao vivo — uma implementação, dois usos,
+        /// e nenhuma chance de os dois divergirem.
+        /// </summary>
+        public static string Resumo()
+        {
+            var itens = Entradas;
+            var sb = new StringBuilder();
 
             if (itens.Count == 0)
             {
@@ -151,16 +256,6 @@ namespace Unhinged.Legacy.Diagnostico
                     sb.AppendLine("- … e mais " + (trancados.Count - 40));
                 sb.AppendLine();
             }
-
-            sb.AppendLine("## Todos os itens");
-            sb.AppendLine();
-            sb.AppendLine("| ClassID | modulo | TechType | valor | icone | liberado |");
-            sb.AppendLine("| --- | --- | --- | ---: | :---: | :---: |");
-            foreach (var x in itens.OrderBy(x => x.Modulo).ThenBy(x => x.ClassID))
-                sb.AppendLine("| `" + x.ClassID + "` | " + x.Modulo + " | "
-                    + (x.TechType ?? "—") + " | " + x.TechTypeValor + " | "
-                    + (x.TemIcone ? "sim" : "—") + " | "
-                    + (x.LiberadoNoInicio ? "sim" : "BLOQ") + " |");
 
             return sb.ToString();
         }

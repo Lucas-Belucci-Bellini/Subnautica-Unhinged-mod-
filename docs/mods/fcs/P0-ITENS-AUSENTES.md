@@ -53,9 +53,21 @@ responde** — e é exatamente para isso que existe o diagnóstico abaixo.
 
 ## O diagnóstico que fecha isso numa partida
 
-A partir da **1.2.0**, o plugin escreve `BepInEx\Unhinged-RegistroFCS.md` a cada
-partida, com uma linha por item: ClassID, módulo, TechType, valor numérico, se
-tem ícone, se nasce liberado.
+A partir da **1.2.1**, o plugin escreve `BepInEx\Unhinged-RegistroFCS.md` **ao
+vivo**, uma linha por item, conforme cada um registra: ClassID, módulo, TechType,
+valor numérico, se tem ícone, se nasce liberado.
+
+### Escrito ao vivo, e não no fim — de propósito
+
+| garantia | por quê |
+| --- | --- |
+| o arquivo existe **antes** do primeiro item | se nada aparecer nele, isso já é o diagnóstico |
+| cada linha vai para o disco na hora (`AutoFlush`) | o jogo fechar no item 37 deixa 37 itens gravados, e **onde parou é metade da resposta** |
+| fechado num `finally` | um registro que estoura no meio é o caso em que o diagnóstico mais vale, e seria exatamente o caso em que ele não sairia |
+| exceção vira seção **"Interrompido"** com a causa | o motivo fica no próprio arquivo |
+| `FileShare.ReadWrite` | ⚠️ **dá para copiar com o jogo aberto** — sem isso o Windows bloquearia o arquivo, e a única hora de copiar seria depois de fechar |
+
+Você não precisa esperar o jogo fechar, nem fechar para copiar.
 
 A anotação acontece **dentro do `Patch()`, depois de o Nautilus devolver o
 TechType** — é fato, não intenção.
