@@ -102,3 +102,33 @@ corpo abre com `Build verified` — nunca `In-game tested`. É a diferença entr
 release honesta e uma que mente por omissão.
 
 Ver [`TESTS.md`](TESTS.md) §1 para o que falta e como preencher.
+
+## ⚠️ O build NÃO é byte-reproduzível — e isso vai parecer defeito
+
+Compilar o mesmo commit na sua máquina e comparar o SHA com o do `SHA256SUMS`
+publicado **dá diferente**. Medido na 1.2.2:
+
+| | |
+| --- | --- |
+| ZIP publicado (runner) | `bceb38dc…` |
+| ZIP local (mesmo commit) | `04a2eb75…` |
+| tamanho dos dois DLLs | **idêntico** (1601024 e 45056) |
+| bytes que diferem no DLL maior | **364** |
+
+A causa é o **caminho de compilação embutido** no assembly:
+`/home/runner/work/Subnautica-Unhinged-mod-/…` no CI contra
+`/home/user/Subnautica-Unhinged-mod-/…` aqui. O MVID do assembly deriva disso,
+então dois builds do mesmo código em pastas diferentes nunca batem. O
+`BUILD-MANIFEST.txt` também difere, por conter `Build Date` e o commit.
+
+**Para que serve o `SHA256SUMS`, então.** Ele prova que o arquivo que você baixou
+é o mesmo que o GitHub publicou — integridade do download, não reprodutibilidade
+do build. É a garantia que ele sempre deu; esta seção existe só para a diferença
+não ser lida como adulteração.
+
+O que dá para conferir de verdade num pacote compilado por conta própria: mesmo
+tamanho de DLL, a versão dentro dele (`strings … | grep '^1\.'`) e os portões
+(`tools/VerificarPatches/rodar.sh` e `build/conferir-modulos.sh`).
+
+Tornar o build reproduzível é possível (`-p:DeterministicSourcePaths=true` com
+`ContinuousIntegrationBuild`), mas **não foi feito** e portanto não é prometido.
