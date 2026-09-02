@@ -157,6 +157,53 @@ namespace Unhinged.Legacy.Diagnostico
             finally { _fluxo = null; }
         }
 
+        /// <summary>
+        /// Registra o resultado de carregar um asset bundle.
+        /// </summary>
+        /// <remarks>
+        /// Separado do registro de itens porque responde outra pergunta. O registro de
+        /// itens diz se o conteúdo <b>existe</b>; este diz se ele <b>funciona</b>. Um
+        /// item cujo bundle não carregou aparece no PDA e no construtor e não faz nada —
+        /// e sem esta linha o relatório mostraria tudo verde enquanto o jogo mostra um
+        /// objeto vazio.
+        /// </remarks>
+        public static void AnotarBundle(string modulo, string bundle, bool carregou, string caminho)
+        {
+            if (!Ligado) return;
+            lock (_trava)
+            {
+                _bundles.Add(new Bundle
+                {
+                    Modulo = modulo, Nome = bundle, Carregou = carregou, Caminho = caminho,
+                });
+
+                if (_fluxo == null) return;
+                try
+                {
+                    if (_tabelaAberta) { _fluxo.WriteLine(); _tabelaAberta = false; }
+                    _fluxo.WriteLine("- 📦 `" + bundle + "` (" + (modulo ?? "?") + ") · "
+                        + (carregou ? "**carregou**" : "**NAO CARREGOU**")
+                        + (caminho == null ? " — nenhum caminho candidato existe" : " — `" + caminho + "`"));
+                }
+                catch (Exception) { }
+            }
+        }
+
+        public sealed class Bundle
+        {
+            public string Modulo;
+            public string Nome;
+            public bool Carregou;
+            public string Caminho;
+        }
+
+        private static readonly List<Bundle> _bundles = new List<Bundle>();
+
+        public static IReadOnlyList<Bundle> Bundles
+        {
+            get { lock (_trava) return _bundles.ToList(); }
+        }
+
         /// <summary>Onde o arquivo está, para o log poder dizer.</summary>
         public static string Caminho => _caminho;
 
