@@ -85,6 +85,13 @@ namespace Unhinged.Legacy
                 foreach (var method in type.GetMethods(flags)
                              .Where(m => m.GetCustomAttribute<TAttribute>() != null))
                 {
+                    // O nome do modulo e o primeiro segmento do namespace — o mesmo
+                    // criterio usado pelo ModPrefab, para as duas metades do relatorio
+                    // falarem do mesmo "modulo".
+                    var modulo = type.Namespace?.Split('.')[0] ?? type.Name;
+                    var fase = typeof(TAttribute).Name.Replace("QMod", "").Replace("Attribute", "");
+
+                    Diagnostico.RegistroDeConteudo.AnotarModulo(modulo, fase, "entrou");
                     try
                     {
                         // Os pontos de entrada do QMod eram estáticos e sem parâmetros.
@@ -92,6 +99,7 @@ namespace Unhinged.Legacy
                         var target = method.IsStatic ? null : Activator.CreateInstance(type);
                         method.Invoke(target, null);
                         executed++;
+                        Diagnostico.RegistroDeConteudo.AnotarModulo(modulo, fase, "concluiu");
                     }
                     catch (Exception ex)
                     {
@@ -99,6 +107,14 @@ namespace Unhinged.Legacy
                         // é o que torna o log utilizável.
                         var cause = (ex as TargetInvocationException)?.InnerException ?? ex;
                         log?.LogError($"{type.FullName}.{method.Name} falhou: {cause}");
+
+                        // ⚠️ E TAMBEM no arquivo de registro. Este catch era o unico
+                        // lugar que sabia por que um modulo inteiro sumiu, e mandava a
+                        // resposta so para o LogOutput.log — dezenas de milhares de
+                        // linhas de todos os mods, que ninguem garimpa. O relatorio do
+                        // operador mostrou 1 item de 7 modulos sem uma palavra sobre os
+                        // outros seis, porque a explicacao estava do outro lado.
+                        Diagnostico.RegistroDeConteudo.AnotarModulo(modulo, fase, "ABORTOU", cause);
                     }
                 }
             }

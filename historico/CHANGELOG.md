@@ -1,5 +1,71 @@
 # Changelog — Subnautica Unhinged
 
+## [FCS 1.3.0] — 2026-09-02 — P0 resolvido: as DUAS causas do conteudo que nao existia
+
+Diagnosticado com evidencia do jogo (`Unhinged-RegistroFCS.md` + `LogOutput.log` da
+1.2.2), nao por leitura de codigo. O log fechou a conta que o relatorio abriu:
+`0 ponto(s) de entrada executado(s)` — os sete modulos abortaram, por duas causas
+independentes.
+
+### Causa A — icone ausente derrubava o modulo inteiro (1 modulo)
+
+`Nautilus.Utility.ImageUtils.LoadSpriteFromFile` promete devolver null quando o
+arquivo nao existe, e em vez disso ESTOURA: `LoadTextureFromFile` devolve null e a
+linha seguinte le `texture2D.width`. NullReferenceException.
+
+Como `GetItemSprite()` roda dentro do `Patch()` do item, a excecao subia pelo item,
+pelo `PatchSpawnables()` e saia pelo `[QModPatch]` — matando o modulo no PRIMEIRO
+item com icone em arquivo. Sao 89 chamadas dessas no pacote.
+
+⚠️ O `FCSDataBox` sobreviveu por ser um dos poucos SEM icone proprio, e por isso era
+o unico item do relatorio — com `icone: —` na coluna. A pista estava ali.
+
+### Causa B — o assembly fundido colidia no painel de opcoes (6 modulos)
+
+```
+ArgumentException: An item with the same key has already been added.
+                   Key: Unhinged.AlterraHub
+  at Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions(...)
+  at CyclopsUpgradeConsole.QPatch..cctor()
+```
+
+Os sete modulos declaram `RegisterModOptions<Config>()` em inicializador estatico. O
+Nautilus indexa os paineis pelo NOME DO ASSEMBLY — sete DLLs davam sete chaves; um
+DLL so da uma. E o estouro no `..cctor` fica memorizado pelo runtime: o tipo nao
+volta a funcionar na sessao.
+
+Terceira vez que o assembly fundido morde pelo mesmo mecanismo (antes: `PatchAll`
+7x na 1.0.5, caminhos de asset na 1.0.3/1.0.7). Sempre que o legado usar
+`Assembly.GetExecutingAssembly()` como IDENTIDADE, e nao como conteudo.
+
+### Corrigido
+- `Utility/ImageUtils.cs` — contem o defeito do Nautilus (`File.Exists` + guarda de
+  null). Vale para qualquer mod portado pela ponte.
+- `Assets/ModPrefab.cs` — `GetItemSprite()` em try/catch: icone que falha vira nota
+  no relatorio e **o item registra assim mesmo**.
+- `Options/OptionsPanelHandler.cs` — duplicata deixa de ser fatal; config indexada
+  por TIPO, que e o que distingue os sete modulos.
+- `Handlers/SpawnAndCommandHandlers.cs` — comandos de console idem. ⚠️ Precaucao, nao
+  defeito medido: conferi os nomes e nenhum se repete.
+
+### O diagnostico tambem estava quebrado — tres defeitos
+1. `AnotarFalha` **nao era chamada de lugar nenhum**: a linha `excecao no registro: 0`
+   do relatorio nao era informacao, o contador so sabia dizer zero.
+2. `AnotarFalha` nao escrevia no disco, so somava em memoria — numa carga que aborta,
+   a lista morre com o processo.
+3. Nao havia nivel de MODULO, entao o arquivo nao distinguia "rodou e nao registrou"
+   de "estourou no cctor". Agora ha linha do tempo com entrou/concluiu/ABORTOU e as 8
+   primeiras linhas da pilha.
+
+### ⚠️ O que isto NAO resolve
+Os asset bundles do FCS **nao estao instalados** (`Unable to open archive file:
+.../AlterraHub/Assets/fcsalterrahubbundle`). Esse erro o FCS engole, entao nao aborta
+nada — mas os itens vao existir SEM MODELO E SEM ICONE ate as 7 pastas serem
+copiadas. As correcoes fazem o conteudo EXISTIR; usa-lo ainda depende dos assets.
+
+Nivel de verificacao: **Build verified**. As correcoes NAO foram vistas em jogo.
+
+
 ## [FCS 1.2.2] — 2026-09-02 — o LEIA-ME da release estava congelado na v1.0.7
 
 Só documentação: **nenhuma linha de código mudou**. Os DLLs não saem idênticos

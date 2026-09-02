@@ -4,7 +4,55 @@
 > o mesmo arquivo em toda release — escrever a versão nele fazia a página da v1.2.1
 > abrir com o título "v1.0.7".
 
-## 🩺 Esta versão gera um diagnóstico — e é ele que eu preciso ver
+## ✅ O P0 foi encontrado — com o log que você mandou
+
+Seu `Unhinged-RegistroFCS.md` mostrou **1 item registrado de 7 módulos**, e o
+`LogOutput.log` fechou a conta: `0 ponto(s) de entrada executado(s)`. Os sete
+abortaram, por **duas causas independentes** — as duas corrigidas aqui.
+
+**A — um PNG que faltava derrubava o módulo inteiro.** O
+`Nautilus.ImageUtils.LoadSpriteFromFile` promete devolver `null` quando o arquivo não
+existe e em vez disso estoura (`NullReferenceException`, lendo `texture2D.width` de
+uma textura nula). Como o ícone é carregado *dentro* do registro do item, a exceção
+saía pelo ponto de entrada do módulo e matava tudo no **primeiro** item com ícone em
+arquivo — e são 89 desses no pacote. O `FCSDataBox` sobreviveu por ser um dos poucos
+sem ícone próprio: era literalmente o único item do seu relatório.
+
+**B — os outros seis morriam antes de registrar o primeiro item.**
+
+```
+ArgumentException: An item with the same key has already been added.
+                   Key: Unhinged.AlterraHub
+  at Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions(...)
+  at CyclopsUpgradeConsole.QPatch..cctor()
+```
+
+Os sete módulos registram um painel de opções, e o Nautilus indexa isso pelo **nome do
+assembly**. Sete DLLs davam sete chaves; fundidos num só, dão a mesma — e o estouro
+acontece no construtor **estático**, que o runtime memoriza. O módulo não volta.
+
+Detalhe completo em `docs/mods/fcs/BUG-CONTENT-REGISTRATION.md`.
+
+## ⚠️ Isto faz o conteúdo EXISTIR — os assets ainda faltam
+
+O mesmo log mostra:
+
+```
+Unable to open archive file: .../AlterraHub/Assets/fcsalterrahubbundle
+```
+
+Os bundles do FCStudios não estão instalados. Esse erro o FCS engole, então ele não
+aborta nada — mas significa que, mesmo com tudo corrigido:
+
+| depois desta versão | |
+| --- | --- |
+| TechType, receita, PDA, construtor | ✅ funcionam |
+| **modelo e ícone dos itens** | ❌ **só depois de copiar as 7 pastas** |
+
+As pastas e o layout estão na seção de assets, mais abaixo.
+
+## 🩺 O diagnóstico continua ligado — e agora ele mede módulo, não só item
+
 
 Os itens do FCS não aparecerem **nem com `unlock all`** aponta para longe de receita,
 PDA e desbloqueio: o comando percorre TechTypes que **existem**, então item bloqueado

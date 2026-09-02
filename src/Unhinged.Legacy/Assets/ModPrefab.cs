@@ -62,6 +62,29 @@ namespace SMLHelper.V2.Assets
         /// </summary>
         public virtual void Patch()
         {
+            try
+            {
+                PatchInterno();
+            }
+            catch (Exception ex)
+            {
+                // ⚠️ Sem isto o relatorio MENTIA POR CONSTRUCAO: `AnotarFalha` existia e
+                // nao era chamada de lugar nenhum, entao a linha "excecao no registro"
+                // so podia sair 0 — nao porque nao houve excecao, mas porque ninguem
+                // tinha como reportar uma. Contador que so sabe dizer zero e pior que
+                // contador nenhum, porque alguem confia nele.
+                Unhinged.Legacy.Diagnostico.RegistroDeConteudo.AnotarFalha(
+                    ClassID, GetType().Namespace?.Split('.')[0], ex);
+
+                // Relancar de proposito: o registro falhar NAO e cosmetico como o icone.
+                // O codigo do mod costuma usar o TechType logo em seguida, e engolir a
+                // falha aqui trocaria um estouro legivel por um efeito estranho adiante.
+                throw;
+            }
+        }
+
+        private void PatchInterno()
+        {
             OnStartedPatching?.Invoke();
 
             // ⚠️ `unlockAtStart` do Nautilus tem padrao **false**; o do SMLHelper era
@@ -73,7 +96,27 @@ namespace SMLHelper.V2.Assets
             if (!string.IsNullOrEmpty(PrefabFileName))
                 info = info.WithFileName(PrefabFileName);
 
-            var icon = GetItemSprite();
+            // ⚠️ O ICONE NUNCA PODE DERRUBAR O ITEM. Foi exatamente isto que apagou 88
+            // itens do FCS: `GetItemSprite()` do legado chama
+            // `ImageUtils.LoadSpriteFromFile(<pasta de assets>/<ClassID>.png)`, e com o
+            // arquivo ausente o Nautilus estoura NullReferenceException (ele le
+            // `texture2D.width` de uma textura nula). A excecao subia daqui, pelo
+            // `Patch()`, pelo `PatchSpawnables()` e saia pelo `[QModPatch]` do modulo —
+            // matando o modulo inteiro no PRIMEIRO item com icone em arquivo.
+            //
+            // Um icone e cosmetico. Perde-lo custa uma imagem; deixa-lo propagar custa
+            // a suite. O `LoadSpriteFromFile` da ponte ja contem o defeito do Nautilus,
+            // e este try/catch cobre qualquer outra fonte de icone que falhe.
+            Atlas.Sprite icon = null;
+            string falhaIcone = null;
+            try
+            {
+                icon = GetItemSprite();
+            }
+            catch (Exception ex)
+            {
+                falhaIcone = "icone: " + ex.GetType().Name + ": " + ex.Message;
+            }
             if (icon != null)
                 info = info.WithIcon(icon);
 
@@ -98,6 +141,7 @@ namespace SMLHelper.V2.Assets
                 TechTypeValor = (int)TechType,
                 TemIcone = icon != null,
                 LiberadoNoInicio = ResolverLiberadoNoInicio(),
+                FalhaIcone = falhaIcone,
             });
 
             OnFinishedPatching?.Invoke();

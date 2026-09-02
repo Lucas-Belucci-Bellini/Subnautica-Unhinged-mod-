@@ -33,8 +33,28 @@ namespace SMLHelper.V2.Handlers
     {
         public static IConsoleCommandsHandler Main { get; } = new MainShim();
 
+        /// <summary>
+        /// Registra os comandos de um tipo. Uma falha aqui NÃO derruba o módulo.
+        /// </summary>
+        /// <remarks>
+        /// ⚠️ Precaução, não conserto de defeito medido: os nomes de comando dos sete
+        /// módulos foram conferidos e nenhum se repete. Mas este é o mesmo padrão
+        /// "registro por mod" que, no painel de opções, matou seis módulos quando os
+        /// sete DLLs viraram um só — e um comando de debug jamais vale o módulo que o
+        /// declara. Se colidir um dia, sai no log e o resto segue.
+        /// </remarks>
         public static void RegisterConsoleCommands(Type type)
-            => Nautilus.Handlers.ConsoleCommandsHandler.RegisterConsoleCommands(type);
+        {
+            try
+            {
+                Nautilus.Handlers.ConsoleCommandsHandler.RegisterConsoleCommands(type);
+            }
+            catch (Exception ex)
+            {
+                Unhinged.Legacy.Diagnostico.RegistroDeConteudo.AnotarModulo(
+                    type?.Namespace?.Split('.')[0] ?? "?", "ConsoleCommands", "ignorado", ex);
+            }
+        }
 
         public static void RegisterConsoleCommand(string command, Type declaringType, string methodName)
             => Nautilus.Handlers.ConsoleCommandsHandler.RegisterConsoleCommand(command, declaringType, methodName, null);

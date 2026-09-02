@@ -29,13 +29,28 @@ namespace Unhinged.Legacy.Diagnostico
             public int TechTypeValor;
             public bool TemIcone;
             public bool LiberadoNoInicio;
+
+            /// <summary>O registro do item falhou por inteiro — nao ha TechType.</summary>
             public string Falha;
+
+            /// <summary>
+            /// O item REGISTROU, mas o icone nao carregou. Categoria propria de
+            /// proposito: juntar as duas numa coluna so faria um item vivo parecer
+            /// morto, e foi um item vivo sem icone (o FCSDataBox) que sobreviveu
+            /// enquanto 88 morriam. A diferenca e o diagnostico inteiro.
+            /// </summary>
+            public string FalhaIcone;
         }
 
         private static readonly List<Entrada> _entradas = new List<Entrada>();
         private static readonly object _trava = new object();
         private static StreamWriter _fluxo;
         private static string _caminho;
+
+        // Markdown so entende a tabela enquanto as linhas forem CONSECUTIVAS. Como os
+        // eventos de modulo entram no meio do fluxo (e devem — a ordem cronologica e a
+        // informacao), a tabela e fechada e reaberta em volta deles.
+        private static bool _tabelaAberta;
 
         /// <summary>Desligado, `Anotar` não faz nada e não custa nada.</summary>
         public static bool Ligado { get; set; }
@@ -70,8 +85,9 @@ namespace Unhinged.Legacy.Diagnostico
                 _fluxo.WriteLine("> no meio, o que estiver aqui ja vale — e onde ele para e a pista.");
                 _fluxo.WriteLine("> Pode copiar com o jogo aberto.");
                 _fluxo.WriteLine();
-                _fluxo.WriteLine("| # | ClassID | modulo | TechType | valor | icone | liberado |");
-                _fluxo.WriteLine("| ---: | --- | --- | --- | ---: | :---: | :---: |");
+                _fluxo.WriteLine("## Linha do tempo da carga");
+                _fluxo.WriteLine();
+                _tabelaAberta = false;
             }
             catch (Exception)
             {
@@ -95,13 +111,21 @@ namespace Unhinged.Legacy.Diagnostico
             if (_fluxo == null) return;
             try
             {
+                if (!_tabelaAberta)
+                {
+                    _fluxo.WriteLine();
+                    _fluxo.WriteLine("| # | ClassID | modulo | TechType | valor | icone | liberado |");
+                    _fluxo.WriteLine("| ---: | --- | --- | --- | ---: | :---: | :---: |");
+                    _tabelaAberta = true;
+                }
+
                 if (e.Falha != null)
                     _fluxo.WriteLine("| " + n + " | `" + e.ClassID + "` | " + e.Modulo
                         + " | ❌ " + e.Falha + " | — | — | — |");
                 else
                     _fluxo.WriteLine("| " + n + " | `" + e.ClassID + "` | " + e.Modulo
                         + " | " + (e.TechType ?? "—") + " | " + e.TechTypeValor
-                        + " | " + (e.TemIcone ? "sim" : "—")
+                        + " | " + (e.TemIcone ? "sim" : (e.FalhaIcone != null ? "⚠️ falhou" : "—"))
                         + " | " + (e.LiberadoNoInicio ? "sim" : "BLOQ") + " |");
             }
             catch (Exception) { _fluxo = null; }
@@ -139,13 +163,56 @@ namespace Unhinged.Legacy.Diagnostico
         public static void AnotarFalha(string classId, string modulo, Exception ex)
         {
             if (!Ligado) return;
+            var e = new Entrada
+            {
+                ClassID = classId,
+                Modulo = modulo,
+                Falha = (ex?.GetType().Name ?? "?") + ": " + (ex?.Message ?? ""),
+            };
+            // ⚠️ Faltava o EscreverLinha: a falha entrava na lista e NAO ia para o
+            // disco. Numa carga que aborta — que e o caso inteiro deste diagnostico —
+            // a lista morre com o processo e a unica linha que importava se perdia.
+            lock (_trava) { _entradas.Add(e); EscreverLinha(_entradas.Count, e); }
+        }
+
+        /// <summary>
+        /// Registra um evento de MÓDULO: início, fim ou falha de um ponto de entrada.
+        /// </summary>
+        /// <remarks>
+        /// A versão anterior media só itens, e por isso não conseguia distinguir os dois
+        /// desfechos mais importantes: <b>o módulo rodou e não registrou nada</b> contra
+        /// <b>o módulo estourou no meio</b>. O arquivo do operador mostrou 1 item de 7
+        /// módulos, sem uma linha dizendo o que houve com os outros seis — a resposta
+        /// estava só no `LogOutput.log`, que é justamente o arquivo que ninguém garimpa.
+        ///
+        /// Agora o próprio registro diz, em ordem, qual módulo entrou, qual saiu e qual
+        /// morreu com que exceção.
+        /// </remarks>
+        public static void AnotarModulo(string modulo, string fase, string resultado, Exception ex = null)
+        {
+            if (!Ligado) return;
             lock (_trava)
-                _entradas.Add(new Entrada
+            {
+                if (_fluxo == null) return;
+                try
                 {
-                    ClassID = classId,
-                    Modulo = modulo,
-                    Falha = (ex?.GetType().Name ?? "?") + ": " + (ex?.Message ?? ""),
-                });
+                    if (_tabelaAberta) { _fluxo.WriteLine(); _tabelaAberta = false; }
+
+                    var causa = ex == null ? "" :
+                        " — **" + ex.GetType().Name + "**: " + (ex.Message ?? "").Replace("\n", " ").Replace("\r", " ");
+                    _fluxo.WriteLine("- `" + modulo + "` · " + fase + " · **" + resultado + "**" + causa);
+                    if (ex != null && ex.StackTrace != null)
+                    {
+                        _fluxo.WriteLine();
+                        _fluxo.WriteLine("  ```");
+                        foreach (var linha in ex.StackTrace.Split('\n').Take(8))
+                            _fluxo.WriteLine("  " + linha.TrimEnd());
+                        _fluxo.WriteLine("  ```");
+                        _fluxo.WriteLine();
+                    }
+                }
+                catch (Exception) { }
+            }
         }
 
         public static IReadOnlyList<Entrada> Entradas
@@ -199,6 +266,7 @@ namespace Unhinged.Legacy.Diagnostico
             var semTechType = ok.Where(x => x.TechTypeValor == 0).ToList();
             var trancados = ok.Where(x => !x.LiberadoNoInicio).ToList();
             var semIcone = ok.Where(x => !x.TemIcone).ToList();
+            var iconeFalhou = ok.Where(x => x.FalhaIcone != null).ToList();
 
             sb.AppendLine("| | |");
             sb.AppendLine("| --- | ---: |");
@@ -208,6 +276,7 @@ namespace Unhinged.Legacy.Diagnostico
             sb.AppendLine("| excecao no registro | " + comFalha.Count + " |");
             sb.AppendLine("| nascem BLOQUEADOS | " + trancados.Count + " |");
             sb.AppendLine("| sem icone | " + semIcone.Count + " |");
+            sb.AppendLine("| icone FALHOU (item vivo) | " + iconeFalhou.Count + " |");
             sb.AppendLine();
 
             sb.AppendLine("## Por modulo");
@@ -226,6 +295,22 @@ namespace Unhinged.Legacy.Diagnostico
                 sb.AppendLine();
                 foreach (var x in comFalha)
                     sb.AppendLine("- `" + x.ClassID + "` (" + x.Modulo + ") — " + x.Falha);
+                sb.AppendLine();
+            }
+
+            if (iconeFalhou.Count > 0)
+            {
+                sb.AppendLine("## ⚠️ Icone falhou — mas o item EXISTE");
+                sb.AppendLine();
+                sb.AppendLine("Estes registraram TechType e aparecem no jogo; o que falta e a");
+                sb.AppendLine("imagem. A causa quase sempre e a mesma: os asset bundles do FCS");
+                sb.AppendLine("nao foram copiados (o INSTALL.md descreve as 7 pastas). Isso e");
+                sb.AppendLine("esperado ate os assets entrarem, e NAO impede de usar o item.");
+                sb.AppendLine();
+                foreach (var x in iconeFalhou.Take(30))
+                    sb.AppendLine("- `" + x.ClassID + "` (" + x.Modulo + ") — " + x.FalhaIcone);
+                if (iconeFalhou.Count > 30)
+                    sb.AppendLine("- … e mais " + (iconeFalhou.Count - 30) + ".");
                 sb.AppendLine();
             }
 

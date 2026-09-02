@@ -14,7 +14,7 @@ namespace Unhinged.AlterraHub
     /// <c>[BepInPlugin]</c>. Sem esta classe, o DLL compilaria, seria ignorado no
     /// carregamento e o mod simplesmente não existiria em jogo — sem erro nenhum.
     /// </summary>
-    [BepInPlugin(Guid, "Subnautica Unhinged — Alterra Hub (FCStudios)", "1.2.2")]
+    [BepInPlugin(Guid, "Subnautica Unhinged — Alterra Hub (FCStudios)", "1.3.0")]
     // Hard, não Soft: ao contrário do Core, este pacote realmente chama a API do Nautilus
     // em toda receita e todo prefab. Carregar sem ele seria falhar mais tarde e pior.
     [BepInDependency(NautilusGuid, BepInDependency.DependencyFlags.HardDependency)]
