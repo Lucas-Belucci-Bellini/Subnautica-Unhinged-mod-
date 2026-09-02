@@ -50,6 +50,15 @@ manifesto_branch_mod() {
     *)          echo "(sem branch dedicada)" ;;
   esac
 }
+# Nome do arquivo da release. `AlterraHub-v1.1.0.zip` nao dizia qual mod era
+# (AlterraHub e o nome da PASTA), nem que era um porte. Ver docs/VERSIONING.md.
+nome_artefato() {
+  case "$1" in
+    AlterraHub)  echo "fcs-modernized-v$2" ;;
+    ScannerRoom) echo "scannerroom-v$2" ;;
+    *)           echo "unhinged-core-v$2" ;;
+  esac
+}
 manifesto_commit() {
   case "$1" in
     AlterraHub) echo "4275d847de6e0f24c711b4b2a9f4308c10ea8248" ;;
@@ -63,7 +72,8 @@ empacotar() {
   local nome="$1" csproj="$2" versao="$3" leiame="$4"; shift 4
   local dlls=("$@")
 
-  local pkg="dist/$nome-v$versao"
+  local artefato; artefato="$(nome_artefato "$nome" "$versao")"
+  local pkg="dist/$artefato"
   local plugins="$pkg/BepInEx/plugins/$nome"
 
   echo "→ $nome v$versao"
@@ -93,7 +103,13 @@ empacotar() {
     echo "Build Date:           $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
     echo "Verification Level:   Build verified (NAO testado em jogo)"
   } > "$pkg/BUILD-MANIFEST.txt"
-  cp "$leiame" "$pkg/LEIA-ME.md"
+  # ⚠️ Copiar ANTES de compactar. Na primeira versao isto vinha depois do `zip`,
+  # entao os dois arquivos existiam na pasta e NAO dentro do ZIP — quem baixasse
+  # so o arquivo nao teria instrucao de instalacao nenhuma.
+  cp "$leiame" "$pkg/INSTALL.md"; cp "$leiame" "dist/INSTALL.md"
+  if [ -f historico/CHANGELOG.md ]; then
+    cp historico/CHANGELOG.md "$pkg/CHANGELOG.md"; cp historico/CHANGELOG.md dist/CHANGELOG.md
+  fi
   [ -f "src/mods/$nome/LICENSE-FCS.txt" ] && cp "src/mods/$nome/LICENSE-FCS.txt" "$pkg/"
 
   # O .gitignore ja barra binario no repo, mas o pacote e o que sai para fora:
@@ -120,13 +136,13 @@ empacotar() {
   # o pacote esta quebrado do mesmo jeito que a v1.0.6 estava.
   unzip -l "$pkg.zip" | grep -q ' BepInEx/plugins/' \
     || { echo "ERRO: $pkg.zip nao tem BepInEx/plugins/ na raiz."; exit 1; }
-  ! unzip -l "$pkg.zip" | grep -qE " $nome-v$versao/" \
+  ! unzip -l "$pkg.zip" | grep -qE " $artefato/" \
     || { echo "ERRO: $pkg.zip embrulhou tudo numa pasta de topo."; exit 1; }
 
   # O manifesto tambem sai SOLTO, para poder ir como asset da release sem que
   # ninguem precise abrir o ZIP para saber de onde ele veio.
   cp "$pkg/BUILD-MANIFEST.txt" "dist/BUILD-MANIFEST-$nome.txt"
-  GERADOS+=("$nome-v$versao.zip")
+  GERADOS+=("$artefato.zip")
 
   echo "   $pkg.zip"
   sha256sum "$pkg.zip"
